@@ -4,6 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from service.models import leader, investor, position, atimex_options, engine
 from settings import settings
 from routers import services_router
 
@@ -25,3 +26,8 @@ app.include_router(router=services_router)
 
 if __name__ == '__main__':
     uvicorn.run(app=app, app_dir=settings.APP_PATH, host=settings.APP_HOST, port=settings.APP_PORT)
+    leader.create(engine, checkfirst=True)
+    investor.create(engine, checkfirst=True)
+    position.create(engine, checkfirst=True)
+    atimex_options.create(engine, checkfirst=True)
+

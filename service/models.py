@@ -1,75 +1,99 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float, Null, DateTime
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float, Null, create_engine, Table, \
+    MetaData, DateTime
 
-from .database import Base
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:root@localhost:5432/postgres"
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
-
-class AtimexOptions(Base):
-    __tablename__ = "atimex_options"
-
-    atimex_options_pk = Column(Integer, primary_key=True, index=True)
-    investor_id = Column(Integer, ForeignKey("investor.investor_pk"), nullable=False)
-
-    deal_plus = Column(Float, index=True, default=Null)
-    deal_minus = Column(Float, index=True, default=Null)
-    waiting_time = Column(Float, index=True, default=Null)
-    ask_investor = Column(String, index=True, default=Null)
-    return_cost = Column(Boolean, index=True, default=Null)
-    multiplier = Column(String,  index=True, default=Null)
-    multiplier_value = Column(Float, index=True, default=Null)
-    change_multiplier = Column(Boolean, index=True, default=Null)
-    stop_loss = Column(String, index=True, default=Null)
-    stop_value = Column(Float, index=True, default=Null)
-    open_deals = Column(String, index=True, default=Null)
-    off_initiator = Column(String, index=True, default=Null)
-    switch_off = Column(Boolean, index=True, default=Null)
-    close_opened_deals = Column(String, index=True, default=Null)
-    notification = Column(Boolean, index=True, default=Null)
-    blacklist = Column(Boolean, index=True, default=Null)
-    accompany_transactions = Column(Boolean, index=True, default=Null)
-    exchange_connect = Column(Boolean, index=True, default=Null)
-    apikey_expired = Column(Boolean, index=True, default=Null)
-    closed_deals_myself = Column(Boolean, index=True, default=Null)
-    reconnected = Column(Boolean, index=True, default=Null)
-    recavery_model = Column(Boolean, index=True, default=Null)
-    buyhold_model = Column(Boolean, index=True, default=Null)
-    not_enough_margin = Column(String, index=True, default=Null)
-    accounts_in_different_currencies = Column(String, index=True, default=Null)
-    synchronize_deals = Column(Boolean, index=True, default=Null)
-    deals_not_opened = Column(Boolean, index=True, default=Null)
-    investor_closed_deals = Column(Boolean, index=True, default=Null)
+metadata_obj = MetaData()
 
 
-class Leader(Base):
-    __tablename__ = "leader"
+atimex_options = Table(
+    "atimex_options",
+    metadata_obj,
 
-    leader_pk = Column(Integer, primary_key=True, index=True)
-    login = Column(String, index=True, nullable=False)
-    password = Column(String, index=True, nullable=False)
-    server = Column(String, index=True, nullable=False)
-    balance = Column(String, index=True, nullable=False)
+    Column('atimex_options_pk', Integer, primary_key=True, index=True),
+    Column('investor_pk', Integer, ForeignKey("investor.investor_pk"), nullable=False),
+
+    Column('deal_plus', Float, index=True, default=Null),
+    Column('deal_minus', Float, index=True, default=Null),
+    Column('waiting_time', Float, index=True, default=Null),
+    Column('ask_investor', String, index=True, default=Null),
+    Column('return_cost', Boolean, index=True, default=Null),
+    Column('multiplier', String,  index=True, default=Null),
+    Column('multiplier_value', Float, index=True, default=Null),
+    Column('change_multiplier', Boolean, index=True, default=Null),
+    Column('stop_loss', String, index=True, default=Null),
+    Column('stop_value', Float, index=True, default=Null),
+    Column('open_deals', String, index=True, default=Null),
+    Column('off_initiator', String, index=True, default=Null),
+    Column('switch_off', Boolean, index=True, default=Null),
+    Column('close_opened_deals', String, index=True, default=Null),
+    Column('notification', Boolean, index=True, default=Null),
+    Column('blacklist', Boolean, index=True, default=Null),
+    Column('accompany_transactions', Boolean, index=True, default=Null),
+    Column('exchange_connect', Boolean, index=True, default=Null),
+    Column('apikey_expired', Boolean, index=True, default=Null),
+    Column('closed_deals_myself', Boolean, index=True, default=Null),
+    Column('reconnected', Boolean, index=True, default=Null),
+    Column('recavery_model', Boolean, index=True, default=Null),
+    Column('buyhold_model', Boolean, index=True, default=Null),
+    Column('not_enough_margin', String, index=True, default=Null),
+    Column('accounts_in_different_currencies', String, index=True, default=Null),
+    Column('synchronize_deals', Boolean, index=True, default=Null),
+    Column('deals_not_opened', Boolean, index=True, default=Null),
+    Column('investor_closed_deals', Boolean, index=True, default=Null),
+
+    autoload=True,
+    autoload_with=engine,
+)
 
 
-class Investor(Base):
-    __tablename__ = "investor"
+leader = Table(
+    "leader",
+    metadata_obj,
 
-    investor_pk = Column(Integer, primary_key=True, index=True)
-    leader_id = Column(Integer, ForeignKey("leader.leader_pk"), nullable=False)
-    login = Column(String, index=True, nullable=False)
-    password = Column(String, index=True, nullable=False)
-    server = Column(String, index=True, nullable=False)
-    balance = Column(Float, index=True, nullable=False)
+    Column('leader_pk', Integer, primary_key=True, index=True),
+    Column('login', String, index=True, nullable=False),
+    Column('password', String, index=True, nullable=False),
+    Column('server', String, index=True, nullable=False),
+    Column('balance', String, index=True, nullable=False),
+
+    autoload=True,
+    autoload_with=engine,
+)
 
 
-class Position(Base):
-    __tablename__ = "position"
+investor = Table(
+    "investor",
+    metadata_obj,
 
-    position_pk = Column(Integer, primary_key=True, index=True)
-    leader_id = Column(Integer, ForeignKey("leader.leader_pk"), nullable=False)
+    Column('investor_pk', Integer, primary_key=True, index=True),
+    Column('leader_pk', Integer, ForeignKey("leader.leader_pk"), nullable=False),
+    Column('login', String, index=True, nullable=False),
+    Column('password', String, index=True, nullable=False),
+    Column('server', String, index=True, nullable=False),
+    Column('balance', Float, index=True, nullable=False),
 
-    ticket = Column(Integer, index=True, nullable=False, unique=True)
-    time = Column(DateTime, index=True, nullable=False)
-    type = Column(String, index=True, nullable=False)
-    volume = Column(Float, index=True, nullable=False)
-    sell_price = Column(Float, index=True, nullable=False)
-    buy_price = Column(Float, index=True, nullable=False)
-    profit = Column(Float, index=True, nullable=False)
+    autoload=True,
+    autoload_with=engine,
+)
+
+
+position = Table(
+    "position",
+    metadata_obj,
+
+    Column('position_pk', Integer, primary_key=True, index=True),
+    Column('leader_pk', Integer, ForeignKey("leader.leader_pk"), nullable=False),
+
+    Column('ticket', Integer, index=True, nullable=False, unique=True),
+    Column('time', DateTime, index=True, nullable=False),
+    Column('type', String, index=True, nullable=False),
+    Column('volume', Float, index=True, nullable=False),
+    Column('sell_price', Float, index=True, nullable=False),
+    Column('buy_price', Float, index=True, nullable=False),
+    Column('profit', Float, index=True, nullable=False),
+
+    autoload=True,
+    autoload_with=engine,
+)
