@@ -42,9 +42,6 @@ atimex_options = Table(
     Column('synchronize_deals', Boolean, index=True, default=Null),
     Column('deals_not_opened', Boolean, index=True, default=Null),
     Column('investor_closed_deals', Boolean, index=True, default=Null),
-
-    autoload=True,
-    autoload_with=engine,
 )
 
 
@@ -57,9 +54,6 @@ leader = Table(
     Column('password', String, index=True, nullable=False),
     Column('server', String, index=True, nullable=False),
     Column('balance', String, index=True, nullable=False),
-
-    autoload=True,
-    autoload_with=engine,
 )
 
 
@@ -73,9 +67,6 @@ investor = Table(
     Column('password', String, index=True, nullable=False),
     Column('server', String, index=True, nullable=False),
     Column('balance', Float, index=True, nullable=False),
-
-    autoload=True,
-    autoload_with=engine,
 )
 
 
@@ -93,7 +84,4 @@ position = Table(
     Column('sell_price', Float, index=True, nullable=False),
     Column('buy_price', Float, index=True, nullable=False),
     Column('profit', Float, index=True, nullable=False),
-
-    autoload=True,
-    autoload_with=engine,
 )
