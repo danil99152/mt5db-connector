@@ -1,8 +1,9 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float, Null, create_engine, Table, \
     MetaData, DateTime
 
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:root@localhost:5432/postgres"
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+from settings import settings
+
+engine = create_engine(settings.SQLALCHEMY_DATABASE_URL)
 
 metadata_obj = MetaData()
 
