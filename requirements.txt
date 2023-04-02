@@ -4,3 +4,4 @@ pydantic~=1.10.7
 starlette~=0.26.1
 SQLAlchemy==2.0.8
 psycopg2==2.9.5
+requests~=2.28.2
