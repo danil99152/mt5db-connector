@@ -32,6 +32,7 @@ async def get_positions():
             response.append([*i])
         return response
     except Exception as e:
+        engine.connect().close()
         return f"Cannot get it because {e}"
 
 
@@ -43,6 +44,7 @@ async def get_position(ticket: int):
         result = engine.connect().execute(statement).fetchall()
         return [*result[0]]
     except Exception as e:
+        engine.connect().close()
         return f"Cannot get it because {e}"
 
 
@@ -68,6 +70,7 @@ async def post_position(request: Position):
             conn.commit()
         return "Posted"
     except Exception as e:
+        engine.connect().close()
         return f"Wasn't posted because {e}"
 
 
@@ -86,6 +89,7 @@ async def patch_position(ticket: int, request: dict):
             conn.commit()
         return "Patched"
     except Exception as e:
+        engine.connect().close()
         return f"Wasn't patched because {e}"
 
 
@@ -99,6 +103,7 @@ async def delete_position(ticket: int):
             conn.commit()
         return "Position deleted"
     except Exception as e:
+        engine.connect().close()
         return f"Position was not deleted because {e}"
 
 
@@ -110,6 +115,7 @@ async def get_option(option_id: int):
         result = engine.connect().execute(statement).fetchall()
         return [*result[0]]
     except Exception as e:
+        engine.connect().close()
         return f"Cannot get it because {e}"
 
 
@@ -124,4 +130,5 @@ async def get_options():
             response.append([*i])
         return response
     except Exception as e:
+        engine.connect().close()
         return f"Cannot get it because {e}"

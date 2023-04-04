@@ -1,7 +1,11 @@
+import asyncio
 import json
+
 import requests
 from pydantic import BaseModel
+from sqlalchemy import update, insert, select
 
+from service.models import atimex_options, engine
 from settings import settings
 
 
@@ -33,7 +37,7 @@ class Options(BaseModel):
     buy_hold_model: bool
     not_enough_margin: str
     accounts_in_diff_curr: str
-    synchronize_deals: str
+    synchronize_deals: bool
     deals_not_opened: bool
     closed_deal_investor: bool
 
@@ -41,30 +45,68 @@ class Options(BaseModel):
 class OptionsUpdater:
     __slots__ = []
 
-    options = json.loads(requests.get(settings.host).text)[0]
-    options.pop('leader_login', None)
-    options.pop('leader_password', None)
-    options.pop('leader_server', None)
-    options.pop('investor_one_login', None)
-    options.pop('investor_one_password', None)
-    options.pop('investor_one_server', None)
-    options.pop('investment_one_size', None)
-    options.pop('investor_two_login', None)
-    options.pop('investor_two_password', None)
-    options.pop('investor_two_server', None)
-    options.pop('investment_two_size', None)
+    @staticmethod
+    async def update_options():
+        while True:
+            options = {}
+            try:
+                options = json.loads(requests.get(settings.host).text)[0]
+            except Exception as e:
+                print(e)
+            to_delete = ['leader_login', 'leader_password', 'leader_server',
+                         'investor_one_login', 'investor_one_password',
+                         'investor_one_server', 'investment_one_size',
+                         'investor_two_login', 'investor_two_password',
+                         'investor_two_server', 'investment_two_size',
+                         'opening_deal', 'closing_deal', 'target_and_stop',
+                         'signal_relevance', 'profitability', 'risk',
+                         'profit', 'comment', 'relevance', 'access',
+                         'access_1', 'access_2', 'update_at', 'created_at']
+            for key in to_delete:
+                options.pop(key, None)
 
-    options.pop('opening_deal', None)
-    options.pop('closing_deal', None)
-    options.pop('target_and_stop', None)
-    options.pop('signal_relevance', None)
-    options.pop('profitability', None)
-    options.pop('risk', None)
-    options.pop('profit', None)
-    options.pop('comment', None)
-    options.pop('relevance', None)
-    options.pop('access', None)
-    options.pop('access_1', None)
-    options.pop('access_2', None)
-    options.pop('update_at', None)
-    options.pop('created_at', None)
+            for key in options:
+                if options[key] in {"Да", "Переоткрывать", "Корректировать объем"}:
+                    options[key] = True
+                elif options[key] in {"Нет", "Не переоткрывать", "Не корректировать"}:
+                    options[key] = False
+
+            investor_pk = 1
+
+            statement = select(atimex_options).where(atimex_options.c.investor_pk == investor_pk)
+            result = engine.connect().execute(statement).fetchall()
+            options['investor_pk'] = investor_pk
+            values = Options(**options).dict()
+            values['investor_pk'] = investor_pk
+            if options:
+                if not result:
+                    try:
+                        statement = insert(atimex_options).values(values)
+                        with engine.connect() as conn:
+                            conn.execute(statement)
+                            conn.commit()
+                    except Exception as e:
+                        print(f"Wasn't inserted because {e}")
+                elif result and list(result[0]) != list(values.values()):
+                    try:
+                        statement = update(atimex_options).where(atimex_options.c.investor_pk == investor_pk).values(values)
+                        with engine.connect() as conn:
+                            conn.execute(statement)
+                            conn.commit()
+                    except Exception as e:
+                        print(f"Wasn't patched because {e}")
+
+            await asyncio.sleep(5)
+
+async def callback():
+    await OptionsUpdater.update_options()
+
+def between_callback():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    loop.run_until_complete(callback())
+    loop.close()
+
+
+# TODO sqlalchemy.exc.TimeoutError: QueuePool limit of size 5 overflow 10 reached, connection timed out, timeout 30.00
