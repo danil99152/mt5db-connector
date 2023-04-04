@@ -32,5 +32,6 @@ if __name__ == '__main__':
     investor.create(engine, checkfirst=True)
     position.create(engine, checkfirst=True)
     atimex_options.create(engine, checkfirst=True)
-    threading.Thread(target=between_callback).start()
+    # TODO sqlalchemy.exc.TimeoutError: QueuePool limit of size 5 overflow 10 reached, connection timed out, timeout 30.00
+    # threading.Thread(target=between_callback).start()
     uvicorn.run(app=app, app_dir=settings.APP_PATH, host=settings.APP_HOST, port=settings.APP_PORT)

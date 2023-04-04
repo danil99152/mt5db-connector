@@ -14,7 +14,17 @@ atimex_options = Table(
 
     Column('id', Integer, primary_key=True, index=True),
     Column('investor_pk', Integer, ForeignKey("investor.investor_pk"), nullable=False),
-
+    Column('leader_login', String, index=True, default=Null),
+    Column('leader_password', String, index=True, default=Null),
+    Column('leader_server', String, index=True, default=Null),
+    Column('investor_one_login', String, index=True, default=Null),
+    Column('investor_one_password', String, index=True, default=Null),
+    Column('investor_one_server', String, index=True, default=Null),
+    Column('investment_one_size', String, index=True, default=Null),
+    Column('investor_two_login', String, index=True, default=Null),
+    Column('investor_two_password', String, index=True, default=Null),
+    Column('investor_two_server', String, index=True, default=Null),
+    Column('investment_two_size', String, index=True, default=Null),
     Column('deal_in_plus', Float, index=True, default=Null),
     Column('deal_in_minus', Float, index=True, default=Null),
     Column('waiting_time', Float, index=True, default=Null),

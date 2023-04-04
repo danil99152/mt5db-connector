@@ -12,6 +12,17 @@ from settings import settings
 class Options(BaseModel):
     id: int
     investor_pk: int
+    leader_login: str
+    leader_password: str
+    leader_server: str
+    investor_one_login: str
+    investor_one_password: str
+    investor_one_server: str
+    investment_one_size: str
+    investor_two_login: str
+    investor_two_password: str
+    investor_two_server: str
+    investment_two_size: str
     deal_in_plus: float
     deal_in_minus: float
     waiting_time: float
@@ -53,12 +64,7 @@ class OptionsUpdater:
                 options = json.loads(requests.get(settings.host).text)[0]
             except Exception as e:
                 print(e)
-            to_delete = ['leader_login', 'leader_password', 'leader_server',
-                         'investor_one_login', 'investor_one_password',
-                         'investor_one_server', 'investment_one_size',
-                         'investor_two_login', 'investor_two_password',
-                         'investor_two_server', 'investment_two_size',
-                         'opening_deal', 'closing_deal', 'target_and_stop',
+            to_delete = ['opening_deal', 'closing_deal', 'target_and_stop',
                          'signal_relevance', 'profitability', 'risk',
                          'profit', 'comment', 'relevance', 'access',
                          'access_1', 'access_2', 'update_at', 'created_at']
@@ -89,7 +95,8 @@ class OptionsUpdater:
                         print(f"Wasn't inserted because {e}")
                 elif result and list(result[0]) != list(values.values()):
                     try:
-                        statement = update(atimex_options).where(atimex_options.c.investor_pk == investor_pk).values(values)
+                        statement = update(atimex_options).where(atimex_options.c.investor_pk == investor_pk).values(
+                            values)
                         with engine.connect() as conn:
                             conn.execute(statement)
                             conn.commit()
@@ -98,8 +105,10 @@ class OptionsUpdater:
 
             await asyncio.sleep(5)
 
+
 async def callback():
     await OptionsUpdater.update_options()
+
 
 def between_callback():
     loop = asyncio.new_event_loop()
@@ -108,5 +117,3 @@ def between_callback():
     loop.run_until_complete(callback())
     loop.close()
 
-
-# TODO sqlalchemy.exc.TimeoutError: QueuePool limit of size 5 overflow 10 reached, connection timed out, timeout 30.00
