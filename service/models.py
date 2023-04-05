@@ -102,5 +102,5 @@ position = Table(
     Column('comment', String, index=True, nullable=False),
     Column('price_close', Float, index=True, nullable=False),
     Column('time_close', Integer, index=True, nullable=False),
-    Column('active', Integer, index=True, nullable=False),
+    Column('active', Boolean, index=True, nullable=False),
 )
