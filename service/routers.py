@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy import select, delete, insert, update
 from starlette.responses import JSONResponse
 
+from exceptions import Exceptions
 from service.models import atimex_options, position, engine
 
 router = APIRouter(prefix='/investor')
@@ -13,17 +14,25 @@ router = APIRouter(prefix='/investor')
 class Position(BaseModel):
     leader_pk: int
     ticket: int
-    time: datetime
-    type: str
+    time: int
+    time_update: int
+    type: int
+    magic: int
     volume: float
-    sell_price: float
-    buy_price: float
-    profit: float
+    price_open: float
+    tp: float
+    sl: float
+    price_current: float
+    symbol: str
+    comment: str
+    price_close: float
+    time_close: int
+    active: bool
 
 
 # for investors
 @router.get('/get-positions/', response_class=JSONResponse)
-async def get_positions():
+async def get_positions() -> list | str:
     try:
         statement = select(position)
         result = engine.connect().execute(statement).fetchall()
@@ -32,35 +41,41 @@ async def get_positions():
             response.append([*i])
         return response
     except Exception as e:
-        engine.connect().close()
-        return f"Cannot get it because {e}"
+        Exceptions().get_exception(e)
 
 
 # for investors
 @router.get('/get-position/', response_class=JSONResponse)
-async def get_position(ticket: int):
+async def get_position(ticket: int) -> list | str:
     try:
         statement = select(position).where(position.c.ticket == ticket)
         result = engine.connect().execute(statement).fetchall()
         return [*result[0]]
     except Exception as e:
-        engine.connect().close()
-        return f"Cannot get it because {e}"
+        Exceptions().get_exception(e)
 
 
 # for leader
 @router.post('/post-position/', response_class=JSONResponse)
-async def post_position(request: Position):
+async def post_position(request: Position) -> str:
     # for example, request can be like that:
     # {
-    #   "leader_pk": 0,
-    #   "ticket": 0,
-    #   "time": "2023-04-01T00:47:06.104Z",
-    #   "type": "string",
-    #   "volume": 0,
-    #   "sell_price": 0,
-    #   "buy_price": 0,
-    #   "profit": 0
+    #     "leader_pk": 0,
+    #     "ticket": 0,
+    #     "time": 0,
+    #     "time_update": 0,
+    #     "type": 0,
+    #     "magic": 0,
+    #     "volume": 0,
+    #     "price_open": 0,
+    #     "tp": 0,
+    #     "sl": 0,
+    #     "price_current": 0,
+    #     "symbol": "string",
+    #     "comment": "string",
+    #     "price_close": 0,
+    #     "time_close": 0,
+    #     "active": true
     # }
 
     try:
@@ -71,12 +86,12 @@ async def post_position(request: Position):
         return "Posted"
     except Exception as e:
         engine.connect().close()
-        return f"Wasn't posted because {e}"
+        return Exceptions().post_exception(e)
 
 
 # for leader
 @router.patch('/patch-position/', response_class=JSONResponse)
-async def patch_position(ticket: int, request: dict):
+async def patch_position(ticket: int, request: dict) -> str:
     # for example, request can be like that:
     # {
     #     "profit": 600
@@ -89,13 +104,12 @@ async def patch_position(ticket: int, request: dict):
             conn.commit()
         return "Patched"
     except Exception as e:
-        engine.connect().close()
-        return f"Wasn't patched because {e}"
+        return Exceptions().patch_exception(e)
 
 
 # for leader
 @router.delete('/delete-position/', response_class=JSONResponse)
-async def delete_position(ticket: int):
+async def delete_position(ticket: int) -> str:
     try:
         statement = delete(position).where(position.c.ticket == ticket)
         with engine.connect() as conn:
@@ -103,25 +117,23 @@ async def delete_position(ticket: int):
             conn.commit()
         return "Position deleted"
     except Exception as e:
-        engine.connect().close()
-        return f"Position was not deleted because {e}"
+        return Exceptions().delete_exception(e)
 
 
 # for investors
 @router.get('/get-option/', response_class=JSONResponse)
-async def get_option(option_id: int):
+async def get_option(option_id: int) -> list | str:
     try:
         statement = select(atimex_options).where(atimex_options.c.atimex_options_pk == option_id)
         result = engine.connect().execute(statement).fetchall()
         return [*result[0]]
     except Exception as e:
-        engine.connect().close()
-        return f"Cannot get it because {e}"
+        return Exceptions().get_exception(e)
 
 
 # for investors
 @router.get('/get-options/', response_class=JSONResponse)
-async def get_options():
+async def get_options() -> list | str:
     try:
         statement = select(atimex_options)
         result = engine.connect().execute(statement).fetchall()
@@ -130,5 +142,18 @@ async def get_options():
             response.append([*i])
         return response
     except Exception as e:
-        engine.connect().close()
-        return f"Cannot get it because {e}"
+        return Exceptions().get_exception(e)
+
+
+# for investors
+@router.get('/get-positions/active/', response_class=JSONResponse)
+async def get_active_positions() -> list | str:
+    try:
+        statement = select(position).where(position.c.active is True)
+        result = engine.connect().execute(statement).fetchall()
+        response = []
+        for i in result:
+            response.append([*i])
+        return response
+    except Exception as e:
+        return Exceptions().get_exception(e)
