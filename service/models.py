@@ -88,7 +88,7 @@ position = Table(
     Column('position_pk', Integer, primary_key=True, index=True),
     Column('leader_pk', Integer, ForeignKey("leader.leader_pk"), nullable=False),
 
-    Column('ticket', Integer, index=True, nullable=False, unique=True),
+    Column('ticket', Integer, index=True, nullable=False),
     Column('time', Integer, index=True, nullable=False),
     Column('time_update', Integer, index=True, nullable=False),
     Column('type', Integer, index=True, nullable=False),
