@@ -1,5 +1,5 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float, Null, create_engine, Table, \
-    MetaData, DateTime
+    MetaData
 
 from settings import settings
 
@@ -61,10 +61,8 @@ leader = Table(
     metadata_obj,
 
     Column('leader_pk', Integer, primary_key=True, index=True),
-    Column('login', String, index=True, nullable=False),
-    Column('password', String, index=True, nullable=False),
-    Column('server', String, index=True, nullable=False),
-    Column('balance', String, index=True, nullable=False),
+    Column('account_pk', Integer, ForeignKey("account.account_pk"), nullable=False),
+
 )
 
 
@@ -74,10 +72,28 @@ investor = Table(
 
     Column('investor_pk', Integer, primary_key=True, index=True),
     Column('leader_pk', Integer, ForeignKey("leader.leader_pk"), nullable=False),
+    Column('account_pk', Integer, ForeignKey("account.account_pk"), nullable=False),
+)
+
+container = Table(
+    "container",
+    metadata_obj,
+
+    Column('container_pk', Integer, primary_key=True, index=True),
+    Column('account_pk', Integer, ForeignKey("account.account_pk"), nullable=False),
+    Column('port', Integer, index=True, nullable=False),
+)
+
+account = Table(
+    "account",
+    metadata_obj,
+
+    Column('account_pk', Integer, primary_key=True, index=True),
     Column('login', String, index=True, nullable=False),
     Column('password', String, index=True, nullable=False),
     Column('server', String, index=True, nullable=False),
     Column('balance', Float, index=True, nullable=False),
+    Column('equity', Float, index=True, nullable=False),
 )
 
 
