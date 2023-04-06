@@ -43,6 +43,7 @@ class Options(BaseModel):
     synchronize_deals: bool
     deals_not_opened: bool
     closed_deal_investor: bool
+    access: bool
 
 
 class Position(BaseModel):

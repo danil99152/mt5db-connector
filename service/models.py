@@ -53,6 +53,7 @@ atimex_options = Table(
     Column('synchronize_deals', Boolean, index=True, default=Null),
     Column('deals_not_opened', Boolean, index=True, default=Null),
     Column('closed_deal_investor', Boolean, index=True, default=Null),
+    Column('access', Boolean, index=True, default=Null),
 )
 
 

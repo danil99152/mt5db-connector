@@ -2,7 +2,6 @@ import asyncio
 import json
 
 import requests
-from pydantic import BaseModel
 from sqlalchemy import update, insert, select
 
 from service.configs import Options
@@ -52,6 +51,7 @@ class OptionsUpdater:
 
             values = Options(**options).dict()
             values['investor_pk'] = investor_pk
+            values['access'] = True
             if options:
                 if not result:
                     try:
