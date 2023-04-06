@@ -5,7 +5,7 @@ import requests
 from sqlalchemy import update, insert, select
 
 from service.configs import Options
-from service.models import atimex_options, engine
+from service.models import atimex_options, engine, account, investor, leader
 from settings import settings
 
 
@@ -53,22 +53,97 @@ class OptionsUpdater:
 
             values = Options(**options).dict()
             values['investor_pk'] = investor_pk
+
+            leader_data = {
+                "account_pk": 1,
+                "login": values['leader_login'],
+                "password": values['leader_password'],
+                "server": values['leader_server'],
+                "balance": 10000,
+                "equity": 10000,
+            }
+            investor1_data = {
+                "account_pk": 2,
+                "login": values['investor_one_login'],
+                "password": values['investor_one_password'],
+                "server": values['investor_one_server'],
+                "balance": values['investment_one_size'],
+                "equity": 10000,
+            }
+            investor2_data = {
+                "account_pk": 3,
+                "login": values['investor_two_login'],
+                "password": values['investor_two_password'],
+                "server": values['investor_two_server'],
+                "balance": values['investment_two_size'],
+                "equity": 10000,
+            }
             if options:
                 if not result:
                     try:
-                        statement = insert(atimex_options).values(values)
+                        insert_options = insert(atimex_options).values(values)
+                        insert_leader_account = insert(account).values(leader_data)
+                        insert_leader = insert(leader).values({
+                            'leader_pk': 1,
+                            'account_pk': 1,
+                        })
+                        insert_investor1_account = insert(account).values(investor1_data)
+                        insert_investor1 = insert(investor).values({
+                            'investor_pk': 1,
+                            'leader_pk': 1,
+                            'account_pk': 2,
+                        })
+                        insert_investor2_account = insert(account).values(investor2_data)
+                        insert_investor2 = insert(investor).values({
+                            'investor_pk': 2,
+                            'leader_pk': 1,
+                            'account_pk': 3,
+                        })
                         with engine.connect() as conn:
-                            conn.execute(statement)
+                            conn.execute(insert_leader_account)
+                            conn.commit()
+                        with engine.connect() as conn:
+                            conn.execute(insert_leader)
+                            conn.commit()
+                        with engine.connect() as conn:
+                            conn.execute(insert_investor1_account)
+                            conn.commit()
+                        with engine.connect() as conn:
+                            conn.execute(insert_investor1)
+                            conn.commit()
+                        with engine.connect() as conn:
+                            conn.execute(insert_investor2_account)
+                            conn.commit()
+                        with engine.connect() as conn:
+                            conn.execute(insert_investor2)
+                            conn.commit()
+                        with engine.connect() as conn:
+                            conn.execute(insert_options)
                             conn.commit()
                         result = self.get_options(investor_pk)
                     except Exception as e:
                         print(f"Wasn't inserted because {e}")
                 elif result and list(result[0]) != list(values.values()):
                     try:
-                        statement = update(atimex_options).where(atimex_options.c.investor_pk == investor_pk).values(
-                            values)
+                        update_options = update(atimex_options).where(atimex_options.c.investor_pk == investor_pk
+                                                                      ).values(values)
+                        update_leader = update(account).where(account.c.account_pk == leader_data['account_pk']
+                                                              ).values(leader_data)
+                        update_investor1 = update(account).where(account.c.account_pk == investor1_data['account_pk']
+                                                                 ).values(investor1_data)
+                        update_investor2 = update(account).where(account.c.account_pk == investor2_data['account_pk']
+                                                                 ).values(investor2_data)
                         with engine.connect() as conn:
-                            conn.execute(statement)
+                            conn.execute(update_leader)
+                            conn.commit()
+                        with engine.connect() as conn:
+                            conn.execute(update_investor1)
+                            conn.commit()
+                        with engine.connect() as conn:
+                            conn.execute(update_investor2)
+                            conn.commit()
+                        with engine.connect() as conn:
+                            conn.execute(update_options)
                             conn.commit()
                         result = self.get_options(investor_pk)
                     except Exception as e:
