@@ -49,9 +49,10 @@ class OptionsUpdater:
             except Exception as e:
                 print(e)
 
+            options['access'] = True
+
             values = Options(**options).dict()
             values['investor_pk'] = investor_pk
-            values['access'] = True
             if options:
                 if not result:
                     try:
