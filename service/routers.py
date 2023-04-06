@@ -29,6 +29,25 @@ async def get_positions(leader_id: int) -> list[dict] | str:
 
 
 # for investors
+@router.get('/position/list/active/', response_class=JSONResponse)
+async def get_active_positions(leader_id: int) -> list[dict] | str:
+    try:
+        statement = select(position).where(position.c.active == True and position.c.leader_pk == leader_id)
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
+        response = []
+        for res in result:
+            d = {}
+            for key, value in zip(Position.__annotations__, res):
+                d[key] = value
+            response.append(d)
+        return response
+    except Exception as e:
+        return Exceptions().get_exception(e)
+
+
+# for investors
 @router.get('/position/get/', response_class=JSONResponse)
 async def get_position(leader_id: int, ticket: int) -> list[dict] | str:
     try:
@@ -156,25 +175,6 @@ async def get_options() -> list[dict] | str:
         for res in result:
             d = {}
             for key, value in zip(Options.__annotations__, res):
-                d[key] = value
-            response.append(d)
-        return response
-    except Exception as e:
-        return Exceptions().get_exception(e)
-
-
-# for investors
-@router.get('/position/list/active/', response_class=JSONResponse)
-async def get_active_positions(leader_id: int) -> list[dict] | str:
-    try:
-        statement = select(position).where(position.c.active == True and position.c.leader_pk == leader_id)
-        with engine.connect() as conn:
-            result = conn.execute(statement).fetchall()
-            conn.commit()
-        response = []
-        for res in result:
-            d = {}
-            for key, value in zip(Position.__annotations__, res):
                 d[key] = value
             response.append(d)
         return response

@@ -46,6 +46,7 @@ class Options(BaseModel):
 
 
 class Position(BaseModel):
+    position_pk: int
     leader_pk: int
     ticket: int
     time: int
