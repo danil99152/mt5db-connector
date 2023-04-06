@@ -4,7 +4,7 @@ from starlette.responses import JSONResponse
 
 from exceptions import Exceptions
 from service.configs import Position, Options
-from service.models import atimex_options, position, engine, leader
+from service.models import atimex_options, position, engine, leader, account
 
 router = APIRouter()
 
@@ -100,10 +100,10 @@ async def patch_position(leader_id: int, ticket: int, request: dict) -> str:
         return Exceptions().patch_exception(e)
 
 
-@router.patch('/leader/patch/', response_class=JSONResponse)
-async def patch_leader(leader_id: int, request: dict) -> str:
+@router.patch('/account/patch/', response_class=JSONResponse)
+async def patch_account(account_id: int, request: dict) -> str:
     try:
-        statement = update(leader).where(position.c.leader_pk == leader_id).values(request)
+        statement = update(account).where(account.c.account_pk == account_id).values(request)
         with engine.connect() as conn:
             conn.execute(statement)
             conn.commit()
