@@ -58,30 +58,36 @@ class OptionsUpdater:
 
     @staticmethod
     async def update_options():
+        investor_pk = 1
+        statement = select(atimex_options).where(atimex_options.c.investor_pk == investor_pk)
+        try:
+            with engine.connect() as conn:
+                result = conn.execute(statement).fetchall()
+                conn.commit()
+        except Exception as e:
+            print(f"Wasn't get options from db because {e}")
+
         while True:
             options = {}
             try:
                 options = json.loads(requests.get(settings.host).text)[0]
+                to_delete = ['opening_deal', 'closing_deal', 'target_and_stop',
+                             'signal_relevance', 'profitability', 'risk',
+                             'profit', 'comment', 'relevance', 'access',
+                             'access_1', 'access_2', 'update_at', 'created_at']
+                for key in to_delete:
+                    options.pop(key, None)
+
+                for key in options:
+                    if options[key] in {"Да", "Переоткрывать", "Корректировать объем"}:
+                        options[key] = True
+                    elif options[key] in {"Нет", "Не переоткрывать", "Не корректировать"}:
+                        options[key] = False
+
+                options['investor_pk'] = investor_pk
             except Exception as e:
                 print(e)
-            to_delete = ['opening_deal', 'closing_deal', 'target_and_stop',
-                         'signal_relevance', 'profitability', 'risk',
-                         'profit', 'comment', 'relevance', 'access',
-                         'access_1', 'access_2', 'update_at', 'created_at']
-            for key in to_delete:
-                options.pop(key, None)
 
-            for key in options:
-                if options[key] in {"Да", "Переоткрывать", "Корректировать объем"}:
-                    options[key] = True
-                elif options[key] in {"Нет", "Не переоткрывать", "Не корректировать"}:
-                    options[key] = False
-
-            investor_pk = 1
-
-            statement = select(atimex_options).where(atimex_options.c.investor_pk == investor_pk)
-            result = engine.connect().execute(statement).fetchall()
-            options['investor_pk'] = investor_pk
             values = Options(**options).dict()
             values['investor_pk'] = investor_pk
             if options:
@@ -116,4 +122,3 @@ def between_callback():
 
     loop.run_until_complete(callback())
     loop.close()
-
