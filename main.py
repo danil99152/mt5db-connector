@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from routers import services_router
-from service.models import leader, investor, position, atimex_options, engine
+from service.models import leader, investor, position, atimex_options, engine, account, container
 from service.options_updater import between_callback
 from settings import settings
 
@@ -32,6 +32,8 @@ if __name__ == '__main__':
     investor.create(engine, checkfirst=True)
     position.create(engine, checkfirst=True)
     atimex_options.create(engine, checkfirst=True)
+    account.create(engine, checkfirst=True)
+    container.create(engine, checkfirst=True)
     # TODO sqlalchemy.exc.TimeoutError: QueuePool limit of size 5 overflow 10 reached, connection timed out, timeout 30.00
     threading.Thread(target=between_callback).start()
     uvicorn.run(app=app, app_dir=settings.APP_PATH, host=settings.APP_HOST, port=settings.APP_PORT)
