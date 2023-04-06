@@ -1,62 +1,54 @@
-from datetime import datetime
-
-from fastapi import APIRouter, Request
-from pydantic import BaseModel
+from fastapi import APIRouter
 from sqlalchemy import select, delete, insert, update
 from starlette.responses import JSONResponse
 
 from exceptions import Exceptions
+from service.configs import Position, Options
 from service.models import atimex_options, position, engine
 
-router = APIRouter(prefix='/investor')
-
-
-class Position(BaseModel):
-    leader_pk: int
-    ticket: int
-    time: int
-    time_update: int
-    type: int
-    magic: int
-    volume: float
-    price_open: float
-    tp: float
-    sl: float
-    price_current: float
-    symbol: str
-    comment: str
-    price_close: float
-    time_close: int
-    active: bool
+router = APIRouter()
 
 
 # for investors
-@router.get('/get-positions/', response_class=JSONResponse)
-async def get_positions(leader_id: int) -> list | str:
+@router.get('/position/list/', response_class=JSONResponse)
+async def get_positions(leader_id: int) -> list[dict] | str:
     try:
         statement = select(position).where(position.c.leader_pk == leader_id)
-        result = engine.connect().execute(statement).fetchall()
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
         response = []
-        for i in result:
-            response.append([*i])
+        for res in result:
+            d = {}
+            for key, value in zip(Position.__annotations__, res):
+                d[key] = value
+            response.append(d)
         return response
     except Exception as e:
         Exceptions().get_exception(e)
 
 
 # for investors
-@router.get('/get-position/', response_class=JSONResponse)
-async def get_position(leader_id: int, ticket: int) -> list | str:
+@router.get('/position/get/', response_class=JSONResponse)
+async def get_position(leader_id: int, ticket: int) -> list[dict] | str:
     try:
         statement = select(position).where(position.c.ticket == ticket and position.c.leader_pk == leader_id)
-        result = engine.connect().execute(statement).fetchall()
-        return [*result[0]]
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
+        response = []
+        for res in result:
+            d = {}
+            for key, value in zip(Position.__annotations__, res):
+                d[key] = value
+            response.append(d)
+        return response
     except Exception as e:
         Exceptions().get_exception(e)
 
 
 # for leader
-@router.post('/post-position/', response_class=JSONResponse)
+@router.post('/position/post', response_class=JSONResponse)
 async def post_position(request: Position) -> str:
     # for example, request can be like that:
     # {
@@ -90,7 +82,7 @@ async def post_position(request: Position) -> str:
 
 
 # for leader
-@router.patch('/patch-position/', response_class=JSONResponse)
+@router.patch('/position/patch/', response_class=JSONResponse)
 async def patch_position(leader_id: int, ticket: int, request: dict) -> str:
     # for example, request can be like that:
     # {
@@ -109,7 +101,7 @@ async def patch_position(leader_id: int, ticket: int, request: dict) -> str:
 
 
 # for leader
-@router.delete('/delete-position/', response_class=JSONResponse)
+@router.delete('/position/delete/', response_class=JSONResponse)
 async def delete_position(leader_id: int, ticket: int) -> str:
     try:
         statement = delete(position).where(position.c.ticket == ticket and position.c.leader_pk == leader_id)
@@ -122,39 +114,57 @@ async def delete_position(leader_id: int, ticket: int) -> str:
 
 
 # for investors
-@router.get('/get-option/', response_class=JSONResponse)
-async def get_option(option_id: int) -> list | str:
+@router.get('/option/get/', response_class=JSONResponse)
+async def get_option(option_id: int) -> list[dict] | str:
     try:
-        statement = select(atimex_options).where(atimex_options.c.atimex_options_pk == option_id)
-        result = engine.connect().execute(statement).fetchall()
-        return [*result[0]]
-    except Exception as e:
-        return Exceptions().get_exception(e)
-
-
-# for investors
-@router.get('/get-options/', response_class=JSONResponse)
-async def get_options() -> list | str:
-    try:
-        statement = select(atimex_options)
-        result = engine.connect().execute(statement).fetchall()
+        statement = select(atimex_options).where(atimex_options.c.id == option_id)
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
         response = []
-        for i in result:
-            response.append([*i])
+        for res in result:
+            d = {}
+            for key, value in zip(Options.__annotations__, res):
+                d[key] = value
+            response.append(d)
         return response
     except Exception as e:
         return Exceptions().get_exception(e)
 
 
 # for investors
-@router.get('/get-positions/active/', response_class=JSONResponse)
-async def get_active_positions(leader_id: int) -> list | str:
+@router.get('/option/list/', response_class=JSONResponse)
+async def get_options() -> list[dict] | str:
     try:
-        statement = select(position).where(position.c.active is True and position.c.leader_pk == leader_id)
-        result = engine.connect().execute(statement).fetchall()
+        statement = select(atimex_options)
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
         response = []
-        for i in result:
-            response.append([*i])
+        for res in result:
+            d = {}
+            for key, value in zip(Options.__annotations__, res):
+                d[key] = value
+            response.append(d)
+        return response
+    except Exception as e:
+        return Exceptions().get_exception(e)
+
+
+# for investors
+@router.get('/position/list/active/', response_class=JSONResponse)
+async def get_active_positions(leader_id: int) -> list[dict] | str:
+    try:
+        statement = select(position).where(position.c.active == True and position.c.leader_pk == leader_id)
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
+        response = []
+        for res in result:
+            d = {}
+            for key, value in zip(Position.__annotations__, res):
+                d[key] = value
+            response.append(d)
         return response
     except Exception as e:
         return Exceptions().get_exception(e)

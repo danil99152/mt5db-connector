@@ -5,67 +5,29 @@ import requests
 from pydantic import BaseModel
 from sqlalchemy import update, insert, select
 
+from service.configs import Options
 from service.models import atimex_options, engine
 from settings import settings
-
-
-class Options(BaseModel):
-    id: int
-    investor_pk: int
-    leader_login: str
-    leader_password: str
-    leader_server: str
-    investor_one_login: str
-    investor_one_password: str
-    investor_one_server: str
-    investment_one_size: str
-    investor_two_login: str
-    investor_two_password: str
-    investor_two_server: str
-    investment_two_size: str
-    deal_in_plus: float
-    deal_in_minus: float
-    waiting_time: float
-    ask_an_investor: str
-    price_refund: bool
-    multiplier: str
-    multiplier_value: float
-    changing_multiplier: bool
-    stop_loss: str
-    stop_value: float
-    open_trades: str
-    shutdown_initiator: str
-    disconnect: bool
-    open_trades_disconnect: str
-    notification: bool
-    blacklist: bool
-    accompany_transactions: bool
-    no_exchange_connection: bool
-    api_key_expired: bool
-    closed_deals_myself: bool
-    reconnected: bool
-    recovery_model: bool
-    buy_hold_model: bool
-    not_enough_margin: str
-    accounts_in_diff_curr: str
-    synchronize_deals: bool
-    deals_not_opened: bool
-    closed_deal_investor: bool
 
 
 class OptionsUpdater:
     __slots__ = []
 
     @staticmethod
-    async def update_options():
-        investor_pk = 1
+    def get_options(investor_pk):
         statement = select(atimex_options).where(atimex_options.c.investor_pk == investor_pk)
         try:
             with engine.connect() as conn:
                 result = conn.execute(statement).fetchall()
                 conn.commit()
+                return result
         except Exception as e:
             print(f"Wasn't get options from db because {e}")
+            return []
+
+    async def update_options(self):
+        investor_pk = 1
+        result = self.get_options(investor_pk)
 
         while True:
             options = {}
@@ -97,6 +59,7 @@ class OptionsUpdater:
                         with engine.connect() as conn:
                             conn.execute(statement)
                             conn.commit()
+                        result = self.get_options(investor_pk)
                     except Exception as e:
                         print(f"Wasn't inserted because {e}")
                 elif result and list(result[0]) != list(values.values()):
@@ -106,14 +69,15 @@ class OptionsUpdater:
                         with engine.connect() as conn:
                             conn.execute(statement)
                             conn.commit()
+                        result = self.get_options(investor_pk)
                     except Exception as e:
                         print(f"Wasn't patched because {e}")
 
-            await asyncio.sleep(5)
+            await asyncio.sleep(1)
 
 
 async def callback():
-    await OptionsUpdater.update_options()
+    await OptionsUpdater().update_options()
 
 
 def between_callback():
