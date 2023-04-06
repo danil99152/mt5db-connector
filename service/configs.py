@@ -46,8 +46,7 @@ class Options(BaseModel):
     access: bool
 
 
-class Position(BaseModel):
-    position_pk: int
+class PostPosition(BaseModel):
     leader_pk: int
     ticket: int
     time: int
@@ -65,3 +64,6 @@ class Position(BaseModel):
     time_close: int
     active: bool
 
+
+class Position(PostPosition):
+    position_pk: int

@@ -3,7 +3,7 @@ from sqlalchemy import select, delete, insert, update
 from starlette.responses import JSONResponse
 
 from exceptions import Exceptions
-from service.configs import Position, Options
+from service.configs import Position, Options, PostPosition
 from service.models import atimex_options, position, engine, leader, account
 
 router = APIRouter()
@@ -68,10 +68,10 @@ async def get_position(leader_id: int, ticket: int) -> list[dict] | str:
 
 # for leader
 @router.post('/position/post', response_class=JSONResponse)
-async def post_position(request: Position) -> str:
+async def post_position(request: PostPosition) -> str:
     # for example, request can be like that:
     # {
-    #     "leader_pk": 0,
+    #     "leader_pk": 1,
     #     "ticket": 0,
     #     "time": 0,
     #     "time_update": 0,
