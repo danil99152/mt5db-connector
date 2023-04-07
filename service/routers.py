@@ -1,5 +1,3 @@
-from typing import List, Dict, Any
-
 from fastapi import APIRouter
 from sqlalchemy import select, delete, insert, update
 from starlette.responses import JSONResponse
@@ -13,9 +11,27 @@ router = APIRouter()
 
 # for investors
 @router.get('/position/list/', response_class=JSONResponse)
-async def get_positions(leader_id: int) -> list[dict] | str:
+async def get_positions(account_id: int) -> list[dict] | str:
     try:
-        statement = select(position).where(position.c.leader_pk == leader_id)
+        statement = select(position).where(position.c.account_pk == account_id)
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
+        response = []
+        for res in result:
+            d = {}
+            for key, value in zip(Position.__annotations__, res):
+                d[key] = value
+            response.append(d)
+        return response
+    except Exception as e:
+        Exceptions().get_exception(e)
+
+
+@router.get('/position/list/all/', response_class=JSONResponse)
+async def get_all_positions() -> list[dict] | str:
+    try:
+        statement = select(position)
         with engine.connect() as conn:
             result = conn.execute(statement).fetchall()
             conn.commit()
@@ -32,9 +48,9 @@ async def get_positions(leader_id: int) -> list[dict] | str:
 
 # for investors
 @router.get('/position/list/active/', response_class=JSONResponse)
-async def get_active_positions(leader_id: int) -> list[dict] | str:
+async def get_active_positions(account_id: int) -> list[dict] | str:
     try:
-        statement = select(position).where(position.c.active == True and position.c.leader_pk == leader_id)
+        statement = select(position).where(position.c.active == True and position.c.account_pk == account_id)
         with engine.connect() as conn:
             result = conn.execute(statement).fetchall()
             conn.commit()
@@ -51,9 +67,9 @@ async def get_active_positions(leader_id: int) -> list[dict] | str:
 
 # for investors
 @router.get('/position/get/', response_class=JSONResponse)
-async def get_position(leader_id: int, ticket: int) -> list[dict] | str:
+async def get_position(account_id: int, ticket: int) -> list[dict] | str:
     try:
-        statement = select(position).where(position.c.ticket == ticket and position.c.leader_pk == leader_id)
+        statement = select(position).where(position.c.ticket == ticket and position.c.account_pk == account_id)
         with engine.connect() as conn:
             result = conn.execute(statement).fetchall()
             conn.commit()
@@ -73,7 +89,7 @@ async def get_position(leader_id: int, ticket: int) -> list[dict] | str:
 async def post_position(request: dict) -> str:
     # for example, request can be like that:
     # {
-    #     "leader_pk": 1,
+    #     "account_pk": 1,
     #     "ticket": 0,
     #     "time": 0,
     #     "time_update": 0,
@@ -104,7 +120,7 @@ async def post_position(request: dict) -> str:
 
 # for leader
 @router.patch('/position/patch/', response_class=JSONResponse)
-async def patch_position(leader_id: int, ticket: int, request: dict) -> str:
+async def patch_position(account_id: int, ticket: int, request: dict) -> str:
     # for example, request can be like that:
     # {
     #     "profit": 600
@@ -112,7 +128,7 @@ async def patch_position(leader_id: int, ticket: int, request: dict) -> str:
 
     try:
         statement = update(position).where(position.c.ticket == ticket
-                                           and position.c.leader_pk == leader_id).values(request)
+                                           and position.c.account_pk == account_id).values(request)
         with engine.connect() as conn:
             conn.execute(statement)
             conn.commit()
@@ -181,9 +197,9 @@ async def get_investors(leader_id: int) -> list | str:
 
 # for leader
 @router.delete('/position/delete/', response_class=JSONResponse)
-async def delete_position(leader_id: int, ticket: int) -> str:
+async def delete_position(account_id: int, ticket: int) -> str:
     try:
-        statement = delete(position).where(position.c.ticket == ticket and position.c.leader_pk == leader_id)
+        statement = delete(position).where(position.c.ticket == ticket and position.c.account_pk == account_id)
         with engine.connect() as conn:
             conn.execute(statement)
             conn.commit()
