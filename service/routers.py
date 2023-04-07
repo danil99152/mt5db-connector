@@ -1,3 +1,5 @@
+from typing import List, Dict, Any
+
 from fastapi import APIRouter
 from sqlalchemy import select, delete, insert, update
 from starlette.responses import JSONResponse
@@ -132,7 +134,7 @@ async def patch_account(account_id: int, request: dict) -> str:
 
 
 @router.patch('/account/get/', response_class=JSONResponse)
-async def get_account(account_id: int) -> str:
+async def get_account(account_id: int) -> list[dict] | str:
     try:
         statement = select(account).where(account.c.account_pk == account_id)
         with engine.connect() as conn:
