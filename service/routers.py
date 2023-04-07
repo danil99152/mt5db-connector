@@ -6,7 +6,7 @@ from starlette.responses import JSONResponse
 
 from exceptions import Exceptions
 from service.configs import Position, Options, Account
-from service.models import atimex_options, position, engine, account, leader
+from service.models import atimex_options, position, engine, account, leader, investor
 
 router = APIRouter()
 
@@ -163,6 +163,20 @@ async def get_leader_id(account_id: int) -> int | str:
     except Exception as e:
         Exceptions().get_exception(e)
 
+
+@router.get('/investors_id/get/', response_class=JSONResponse)
+async def get_investors(leader_id: int) -> list | str:
+    try:
+        statement = select(investor.c.investor_pk).where(investor.c.leader_pk == leader_id)
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
+        response = []
+        for value in result:
+            response.append(int(value[0]))
+        return response
+    except Exception as e:
+        Exceptions().get_exception(e)
 
 # for leader
 @router.delete('/position/delete/', response_class=JSONResponse)
