@@ -10,7 +10,7 @@ router = APIRouter()
 
 
 # for investors
-@router.get('/position/list/', response_class=JSONResponse)
+@router.get('/position/list/{account_id}/', response_class=JSONResponse)
 async def get_positions(account_id: int) -> list[dict] | str:
     try:
         statement = select(position).where(position.c.account_pk == account_id)
@@ -47,7 +47,7 @@ async def get_all_positions() -> list[dict] | str:
 
 
 # for investors
-@router.get('/position/list/active/', response_class=JSONResponse)
+@router.get('/position/list/active/{account_id}/', response_class=JSONResponse)
 async def get_active_positions(account_id: int) -> list[dict] | str:
     try:
         statement = select(position).where(position.c.active == True and position.c.account_pk == account_id)
@@ -66,7 +66,7 @@ async def get_active_positions(account_id: int) -> list[dict] | str:
 
 
 # for investors
-@router.get('/position/get/', response_class=JSONResponse)
+@router.get('/position/get/{account_id}/{ticket}/', response_class=JSONResponse)
 async def get_position(account_id: int, ticket: int) -> list[dict] | str:
     try:
         statement = select(position).where(position.c.ticket == ticket and position.c.account_pk == account_id)
@@ -119,7 +119,7 @@ async def post_position(request: dict) -> str:
 
 
 # for leader
-@router.patch('/position/patch/', response_class=JSONResponse)
+@router.patch('/position/patch/{account_id}/{ticket}/', response_class=JSONResponse)
 async def patch_position(account_id: int, ticket: int, request: dict) -> str:
     # for example, request can be like that:
     # {
@@ -137,7 +137,7 @@ async def patch_position(account_id: int, ticket: int, request: dict) -> str:
         return Exceptions().patch_exception(e)
 
 
-@router.patch('/account/patch/', response_class=JSONResponse)
+@router.patch('/account/patch/{account_id}/', response_class=JSONResponse)
 async def patch_account(account_id: int, request: dict) -> str:
     try:
         statement = update(account).where(account.c.account_pk == account_id).values(request)
@@ -149,7 +149,7 @@ async def patch_account(account_id: int, request: dict) -> str:
         return Exceptions().patch_exception(e)
 
 
-@router.get('/account/get/', response_class=JSONResponse)
+@router.get('/account/get/{account_id}/', response_class=JSONResponse)
 async def get_account(account_id: int) -> list[dict] | str:
     try:
         statement = select(account).where(account.c.account_pk == account_id)
@@ -167,7 +167,7 @@ async def get_account(account_id: int) -> list[dict] | str:
         Exceptions().get_exception(e)
 
 
-@router.get('/leader_id/get/', response_class=JSONResponse)
+@router.get('/leader_id/get/{account_id}/', response_class=JSONResponse)
 async def get_leader_id(account_id: int) -> int | str:
     try:
         statement = select(leader.c.leader_pk).where(leader.c.account_pk == account_id)
@@ -180,7 +180,7 @@ async def get_leader_id(account_id: int) -> int | str:
         Exceptions().get_exception(e)
 
 
-@router.get('/investors_id/get/', response_class=JSONResponse)
+@router.get('/investors_id/get/{leader_id}/', response_class=JSONResponse)
 async def get_investors(leader_id: int) -> list | str:
     try:
         statement = select(investor.c.investor_pk).where(investor.c.leader_pk == leader_id)
@@ -196,7 +196,7 @@ async def get_investors(leader_id: int) -> list | str:
 
 
 # for leader
-@router.delete('/position/delete/', response_class=JSONResponse)
+@router.delete('/position/delete/{account_id}/{ticket}/', response_class=JSONResponse)
 async def delete_position(account_id: int, ticket: int) -> str:
     try:
         statement = delete(position).where(position.c.ticket == ticket and position.c.account_pk == account_id)
@@ -209,7 +209,7 @@ async def delete_position(account_id: int, ticket: int) -> str:
 
 
 # for investors
-@router.get('/option/get/', response_class=JSONResponse)
+@router.get('/option/get/{option_id}/', response_class=JSONResponse)
 async def get_option(option_id: int) -> list[dict] | str:
     try:
         statement = select(atimex_options).where(atimex_options.c.id == option_id)
