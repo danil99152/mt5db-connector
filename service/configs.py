@@ -4,17 +4,7 @@ from pydantic import BaseModel
 class Options(BaseModel):
     id: int
     investor_pk: int
-    leader_login: str
-    leader_password: str
-    leader_server: str
-    investor_one_login: str
-    investor_one_password: str
-    investor_one_server: str
-    investment_one_size: str
-    investor_two_login: str
-    investor_two_password: str
-    investor_two_server: str
-    investment_two_size: str
+    investment: str
     deal_in_plus: float
     deal_in_minus: float
     waiting_time: float

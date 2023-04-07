@@ -32,12 +32,6 @@ class OptionsUpdater:
             options = {}
             try:
                 options = json.loads(requests.get(settings.host).text)[0]
-                to_delete = ['opening_deal', 'closing_deal', 'target_and_stop',
-                             'signal_relevance', 'profitability', 'risk',
-                             'profit', 'comment', 'relevance', 'access',
-                             'access_1', 'access_2', 'update_at', 'created_at']
-                for key in to_delete:
-                    options.pop(key, None)
 
                 for key in options:
                     if options[key] in {"Да", "Переоткрывать", "Корректировать объем"}:
@@ -50,32 +44,33 @@ class OptionsUpdater:
                 print(e)
 
             options['access'] = True
+            options['investment'] = options['investment_one_size']
 
             values = Options(**options).dict()
             values['investor_pk'] = investor_pk
 
             leader_data = {
                 "account_pk": 1,
-                "login": values['leader_login'],
-                "password": values['leader_password'],
-                "server": values['leader_server'],
+                "login": options['leader_login'],
+                "password": options['leader_password'],
+                "server": options['leader_server'],
                 "balance": 10000,
                 "equity": 10000,
             }
             investor1_data = {
                 "account_pk": 2,
-                "login": values['investor_one_login'],
-                "password": values['investor_one_password'],
-                "server": values['investor_one_server'],
-                "balance": values['investment_one_size'],
+                "login": options['investor_one_login'],
+                "password": options['investor_one_password'],
+                "server": options['investor_one_server'],
+                "balance": options['investment_one_size'],
                 "equity": 10000,
             }
             investor2_data = {
                 "account_pk": 3,
-                "login": values['investor_two_login'],
-                "password": values['investor_two_password'],
-                "server": values['investor_two_server'],
-                "balance": values['investment_two_size'],
+                "login": options['investor_two_login'],
+                "password": options['investor_two_password'],
+                "server": options['investor_two_server'],
+                "balance": options['investment_two_size'],
                 "equity": 10000,
             }
             if options:
