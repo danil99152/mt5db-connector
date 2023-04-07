@@ -133,7 +133,7 @@ async def patch_account(account_id: int, request: dict) -> str:
         return Exceptions().patch_exception(e)
 
 
-@router.patch('/account/get/', response_class=JSONResponse)
+@router.get('/account/get/', response_class=JSONResponse)
 async def get_account(account_id: int) -> list[dict] | str:
     try:
         statement = select(account).where(account.c.account_pk == account_id)
