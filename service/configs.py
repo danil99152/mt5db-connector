@@ -54,3 +54,12 @@ class Position(BaseModel):
     price_close: float
     time_close: int
     active: bool
+
+
+class Account(BaseModel):
+    account_pk: int
+    login: str
+    password: str
+    server: str
+    balance: float
+    equity: float

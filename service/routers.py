@@ -5,8 +5,8 @@ from sqlalchemy import select, delete, insert, update
 from starlette.responses import JSONResponse
 
 from exceptions import Exceptions
-from service.configs import Position, Options
-from service.models import atimex_options, position, engine, account
+from service.configs import Position, Options, Account
+from service.models import atimex_options, position, engine, account, leader
 
 router = APIRouter()
 
@@ -143,12 +143,26 @@ async def get_account(account_id: int) -> list[dict] | str:
         response = []
         for res in result:
             d = {}
-            for key, value in zip(Position.__annotations__, res):
+            for key, value in zip(Account.__annotations__, res):
                 d[key] = value
             response.append(d)
         return response
     except Exception as e:
         Exceptions().get_exception(e)
+
+
+@router.get('/leader_id/get/', response_class=JSONResponse)
+async def get_leader_id(account_id: int) -> int | str:
+    try:
+        statement = select(leader.c.leader_pk).where(leader.c.account_pk == account_id)
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
+        response = int(result[0][0])
+        return response
+    except Exception as e:
+        Exceptions().get_exception(e)
+
 
 # for leader
 @router.delete('/position/delete/', response_class=JSONResponse)
