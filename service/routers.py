@@ -178,6 +178,7 @@ async def get_investors(leader_id: int) -> list | str:
     except Exception as e:
         Exceptions().get_exception(e)
 
+
 # for leader
 @router.delete('/position/delete/', response_class=JSONResponse)
 async def delete_position(leader_id: int, ticket: int) -> str:

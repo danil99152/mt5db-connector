@@ -93,7 +93,7 @@ position = Table(
     metadata_obj,
 
     Column('position_pk', Integer, primary_key=True, index=True),
-    Column('leader_pk', Integer, ForeignKey("leader.leader_pk"), nullable=False),
+    Column('account_pk', Integer, ForeignKey("account.account_pk"), nullable=False),
 
     Column('ticket', Integer, index=True, nullable=False),
     Column('time', Integer, index=True, nullable=False),
