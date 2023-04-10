@@ -50,7 +50,7 @@ async def get_all_positions() -> list[dict] | str:
 @router.get('/position/list/active/{account_id}/', response_class=JSONResponse)
 async def get_active_positions(account_id: int) -> list[dict] | str:
     try:
-        statement = select(position).where(position.c.active == True and position.c.account_pk == account_id)
+        statement = select(position).where((position.c.active == True) and (position.c.account_pk == account_id))
         with engine.connect() as conn:
             result = conn.execute(statement).fetchall()
             conn.commit()
