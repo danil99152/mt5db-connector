@@ -53,6 +53,7 @@ class Position(BaseModel):
     price_close: float
     time_close: int
     active: bool
+    profit: float
 
 
 class Account(BaseModel):

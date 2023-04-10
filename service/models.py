@@ -111,4 +111,5 @@ position = Table(
     Column('price_close', Float, index=True, nullable=False),
     Column('time_close', Integer, index=True, nullable=False),
     Column('active', Boolean, index=True, nullable=False),
+    Column('profit', Float, index=True, default=0),
 )
