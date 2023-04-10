@@ -85,6 +85,7 @@ account = Table(
     Column('server', String, index=True, nullable=False),
     Column('balance', Float, index=True, nullable=False),
     Column('equity', Float, index=True, nullable=False),
+    Column('currency', String, index=True, nullable=False),
 )
 
 

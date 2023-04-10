@@ -63,3 +63,4 @@ class Account(BaseModel):
     server: str
     balance: float
     equity: float
+    currency: str
