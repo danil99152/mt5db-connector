@@ -309,3 +309,16 @@ async def post_position_history(request: dict) -> str:
     except Exception as e:
         engine.connect().close()
         return Exceptions().post_exception(e)
+
+
+@router.get('/leader_id_by_investor/get/{investor_id}/', response_class=JSONResponse)
+async def get_leader_id_by_investor_id(investor_id: int) -> int | str:
+    try:
+        statement = select(investor.c.leader_pk).where(investor.c.investor_pk == investor_id)
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
+        response = int(result[0][0])
+        return response
+    except Exception as e:
+        Exceptions().get_exception(e)
