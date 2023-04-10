@@ -43,7 +43,6 @@ atimex_options = Table(
     Column('synchronize_deals', Boolean, index=True, default=Null),
     Column('deals_not_opened', Boolean, index=True, default=Null),
     Column('closed_deal_investor', Boolean, index=True, default=Null),
-    Column('access', Boolean, index=True, default=Null),
 )
 
 
@@ -85,7 +84,8 @@ account = Table(
     Column('server', String, index=True, nullable=False),
     Column('balance', Float, index=True, nullable=False),
     Column('equity', Float, index=True, nullable=False),
-    Column('currency', String, index=True, nullable=False),
+    Column('currency', String, index=True),
+    Column('access_dcs', String, index=True, nullable=False, default=True),
 )
 
 

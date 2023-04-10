@@ -43,7 +43,6 @@ class OptionsUpdater:
             except Exception as e:
                 print(e)
 
-            options['access'] = True
             options['investment'] = options['investment_one_size']
 
             values = Options(**options).dict()
