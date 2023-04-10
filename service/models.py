@@ -113,3 +113,11 @@ position = Table(
     Column('active', Boolean, index=True, nullable=False),
     Column('profit', Float, index=True, default=0),
 )
+
+position_history = Table(
+    "position_history",
+    metadata_obj,
+
+    Column('position_history_pk', Integer, primary_key=True, index=True),
+    Column('position_pk', Integer, ForeignKey("position.position_pk"), nullable=False),
+)

@@ -46,7 +46,6 @@ class OptionsUpdater:
             options['investment'] = options['investment_one_size']
 
             values = Options(**options).dict()
-            values['investor_pk'] = investor_pk
 
             leader_data = {
                 "account_pk": 1,

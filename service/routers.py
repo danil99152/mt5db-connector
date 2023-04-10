@@ -4,7 +4,7 @@ from starlette.responses import JSONResponse
 
 from exceptions import Exceptions
 from service.configs import Position, Options, Account
-from service.models import atimex_options, position, engine, account, leader, investor
+from service.models import atimex_options, position, engine, account, leader, investor, position_history
 
 router = APIRouter()
 
@@ -244,3 +244,68 @@ async def get_options() -> list[dict] | str:
         return response
     except Exception as e:
         return Exceptions().get_exception(e)
+
+
+@router.delete('/position-history/delete/{position_id}', response_class=JSONResponse)
+async def delete_position_history(position_id: int) -> str:
+    try:
+        statement = delete(position_history).where(position_history.c.position_pk == position_id)
+        with engine.connect() as conn:
+            conn.execute(statement)
+            conn.commit()
+        return "Position deleted"
+    except Exception as e:
+        return Exceptions().delete_exception(e)
+
+
+@router.get('/position-history/get/{position_id}/', response_class=JSONResponse)
+async def get_position_history(position_id: int) -> list[dict] | str:
+    try:
+        statement = select(position_history).where(position_history.c.position_pk == position_id)
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
+        response = []
+        for res in result:
+            d = {'position_history_pk': res[0],
+                 'position_pk': res[1]}
+            response.append(d)
+        return response
+    except Exception as e:
+        Exceptions().get_exception(e)
+
+
+@router.get('/position-history/list/', response_class=JSONResponse)
+async def get_position_history_list() -> list[dict] | str:
+    try:
+        statement = select(position_history)
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
+        response = []
+        for res in result:
+            d = {'position_history_pk': res[0],
+                 'position_pk': res[1]}
+            response.append(d)
+        return response
+    except Exception as e:
+        return Exceptions().get_exception(e)
+
+
+@router.post('/position-history/post', response_class=JSONResponse)
+async def post_position_history(request: dict) -> str:
+    # for example, request can be like that:
+    # {
+    #     "position_history_pk": 1,
+    #     "position_pk": 0,
+    # }
+
+    try:
+        statement = insert(position_history).values(request)
+        with engine.connect() as conn:
+            conn.execute(statement)
+            conn.commit()
+        return "Posted"
+    except Exception as e:
+        engine.connect().close()
+        return Exceptions().post_exception(e)
