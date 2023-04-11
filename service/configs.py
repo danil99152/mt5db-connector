@@ -36,9 +36,8 @@ class Options(BaseModel):
 
 
 class Position(BaseModel):
-    position_pk: int
-    account_pk: int
     ticket: int
+    account_pk: int
     time: int
     time_update: int
     type: int
@@ -65,3 +64,54 @@ class Account(BaseModel):
     equity: float
     currency: str
     access_dcs: bool
+
+
+class PositionHistory(BaseModel):
+    id: int
+    ticket: int
+    exchange: str
+    user_id: str
+    api_key: str
+    secret_key: str
+    account: str
+    strategy: str
+    investment: float
+    multiplicator: float
+    stop_out: float
+    symbol: str
+    type: str
+    position: str
+    side: str
+    currency: str
+    slippage_percent: float
+    slippage_time: float
+    size: float
+    lots: float
+    lever: float
+    balance_percent: float
+    volume_percent: float
+    open_time: float
+    open_price: float
+    stop_loss: float
+    take_profit: float
+    close_time: int
+    close_price: float
+    change_percent: float
+    gross_p_l: float
+    commision: float
+    swap: float
+    costs: float
+    net_p_l: float
+    roi: float
+    balance: float
+    equity: float
+    float_p_l: float
+    duration: float
+    minimum: float
+    maximum: float
+    risk_reward: float
+    roi_missed: float
+    slip_percent: float
+    slip_time: float
+    magic: str
+    comment: str

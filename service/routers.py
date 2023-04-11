@@ -3,7 +3,7 @@ from sqlalchemy import select, delete, insert, update
 from starlette.responses import JSONResponse
 
 from exceptions import Exceptions
-from service.configs import Position, Options, Account
+from service.configs import Position, Options, Account, PositionHistory
 from service.models import atimex_options, position, engine, account, leader, investor, position_history
 
 router = APIRouter()
@@ -86,29 +86,9 @@ async def get_position(account_id: int, ticket: int) -> list[dict] | str:
 
 # for leader
 @router.post('/position/post', response_class=JSONResponse)
-async def post_position(request: dict) -> str:
-    # for example, request can be like that:
-    # {
-    #     "account_pk": 1,
-    #     "ticket": 0,
-    #     "time": 0,
-    #     "time_update": 0,
-    #     "type": 0,
-    #     "magic": 0,
-    #     "volume": 0,
-    #     "price_open": 0,
-    #     "tp": 0,
-    #     "sl": 0,
-    #     "price_current": 0,
-    #     "symbol": "string",
-    #     "comment": "string",
-    #     "price_close": 0,
-    #     "time_close": 0,
-    #     "active": true
-    # }
-
+async def post_position(request: Position) -> str:
     try:
-        statement = insert(position).values(request)
+        statement = insert(position).values(request.dict())
         with engine.connect() as conn:
             conn.execute(statement)
             conn.commit()
@@ -267,8 +247,9 @@ async def get_position_history(position_id: int) -> list[dict] | str:
             conn.commit()
         response = []
         for res in result:
-            d = {'position_history_pk': res[0],
-                 'position_pk': res[1]}
+            d = {}
+            for key, value in zip(PositionHistory.__annotations__, res):
+                d[key] = value
             response.append(d)
         return response
     except Exception as e:
@@ -284,8 +265,9 @@ async def get_position_history_list() -> list[dict] | str:
             conn.commit()
         response = []
         for res in result:
-            d = {'position_history_pk': res[0],
-                 'position_pk': res[1]}
+            d = {}
+            for key, value in zip(PositionHistory.__annotations__, res):
+                d[key] = value
             response.append(d)
         return response
     except Exception as e:
@@ -293,15 +275,9 @@ async def get_position_history_list() -> list[dict] | str:
 
 
 @router.post('/position-history/post', response_class=JSONResponse)
-async def post_position_history(request: dict) -> str:
-    # for example, request can be like that:
-    # {
-    #     "position_history_pk": 1,
-    #     "position_pk": 0,
-    # }
-
+async def post_position_history(request: PositionHistory) -> str:
     try:
-        statement = insert(position_history).values(request)
+        statement = insert(position_history).values(request.dict())
         with engine.connect() as conn:
             conn.execute(statement)
             conn.commit()
