@@ -14,7 +14,10 @@ class Settings(BaseSettings):
     APP_PATH: constr(min_length=1, max_length=255) = str(pathlib.Path(__file__).parent.resolve())
 
     host = 'https://my.atimex.io:8000/api/demo_mt5/last'
-    SQLALCHEMY_DATABASE_URL = "postgresql://postgres:root@localhost:5432/mt5db"
+    host_investor = 'https://my.atimex.io:8000/api/investor/list'
+    host_history = 'https://my.atimex.io:8000/api/history/list'
+
+    SQLALCHEMY_DATABASE_URL = "postgresql://postgres:root@91.228.224.105:5432/mt5db"
 
 
 settings = Settings()
