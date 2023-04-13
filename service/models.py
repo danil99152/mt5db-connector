@@ -168,6 +168,7 @@ position_history = Table(
     Column('slip_time', Float, index=True, nullable=False),
     Column('magic', String, index=True, nullable=False),
     Column('comment', String, index=True, nullable=False),
+    Column('drawdown', Float, index=True, nullable=False),
 )
 
 investor_strategy = Table(

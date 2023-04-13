@@ -117,3 +117,4 @@ class PositionHistory(BaseModel):
     slip_time: float
     magic: str
     comment: str
+    drawdown: float
