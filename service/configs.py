@@ -69,7 +69,6 @@ class Account(BaseModel):
 
 
 class PositionHistory(BaseModel):
-    id: int
     ticket: int
     exchange: str
     user_id: str
