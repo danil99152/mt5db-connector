@@ -86,6 +86,7 @@ account = Table(
     Column('equity', Float, index=True, nullable=False),
     Column('currency', String, index=True),
     Column('access_dcs', String, index=True, nullable=False, default=True),
+    Column('investment_size', Float, index=True, nullable=False, default=0),
 )
 
 
@@ -111,6 +112,7 @@ position = Table(
     Column('time_close', Integer, index=True, nullable=False),
     Column('active', Boolean, index=True, nullable=False),
     Column('profit', Float, index=True, default=0),
+    Column('investment_size', Float, index=True, nullable=False, default=0),
 )
 
 position_history = Table(
@@ -166,4 +168,20 @@ position_history = Table(
     Column('slip_time', Float, index=True, nullable=False),
     Column('magic', String, index=True, nullable=False),
     Column('comment', String, index=True, nullable=False),
+)
+
+investor_strategy = Table(
+    "investor_strategy",
+    metadata_obj,
+
+    Column('id', Integer, primary_key=True, index=True),
+    Column('investor_pk', Integer, ForeignKey("investor.investor_pk"), nullable=False),
+    Column('strategy_pk', Integer, ForeignKey("strategy.strategy_pk"), nullable=False),
+)
+
+strategy = Table(
+    "strategy",
+    metadata_obj,
+
+    Column('strategy_pk', Integer, primary_key=True, index=True),
 )
