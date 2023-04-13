@@ -59,6 +59,10 @@ class OptionsUpdater:
                     options[i][key] = False
         return options
 
+    @staticmethod
+    def get_exchanges_user(id):
+        return json.loads(requests.get(f'https://my.atimex.io:8000/api/exchanges/user?users_connect__id={id}&exchange').text)
+
     async def update_options(self):
         while True:
             try:
@@ -78,14 +82,15 @@ class OptionsUpdater:
                         if hist['user_id'] == id:
                             investment_size += hist['investment']
                     if investors:
-                        investor_values = Account(**invest).dict()
+                        # investor_values = Account(**invest).dict()
+                        investor_values = self.get_exchanges_user(id)
                         investor_data = {
-                            "account_pk": invest.get('id'),
-                            "login": invest.get('investor_name'),
-                            "password": invest.get('?'),
-                            "server": invest.get('?'),
-                            "balance": invest.get('investment'),
-                            "equity": invest.get('equity'),
+                            "account_pk": id,
+                            "login": investor_values.get('api_key'),
+                            "password": investor_values.get('api_secret'),
+                            "server": investor_values.get('server'),
+                            "balance": investor_values.get('balance'),
+                            "equity": investor_values.get('equity'),
                             "investment_size": investment_size,
                         }
                         if not investor_result:
