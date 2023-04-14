@@ -82,41 +82,44 @@ class OptionsUpdater:
                         if hist['user_id'] == id:
                             investment_size += hist['investment']
                     if investors:
-                        # investor_values = Account(**invest).dict()
-                        investor_values = self.get_exchanges_user(id)
-                        investor_data = {
-                            "account_pk": id,
-                            "login": investor_values.get('api_key'),
-                            "password": investor_values.get('api_secret'),
-                            "server": investor_values.get('server'),
-                            "balance": investor_values.get('balance'),
-                            "equity": investor_values.get('equity'),
-                            "investment_size": investment_size,
-                        }
-                        if not investor_result:
-                            insert_investor_account = insert(account).values(investor_data)
-                            insert_investor = insert(investor).values({
-                                'investor_pk': invest.get('investor_account'),
-                                'leader_pk': invest.get('leader_account'),
-                                'account_pk': invest.get('id'),
-                            })
-                            with engine.connect() as conn:
-                                conn.execute(insert_investor_account)
-                                conn.commit()
-                            with engine.connect() as conn:
-                                conn.execute(insert_investor)
-                                conn.commit()
+                        investor_exchanges = self.get_exchanges_user(id)
+                        for exchange in investor_exchanges:
+                            exchange = {k: v or 0 for (k, v) in exchange.items()}
+                            investor_data = {
+                                "account_pk": exchange['account_exch'].get('account'),
+                                "login": exchange['account_exch'].get('api_key'),
+                                "password": exchange.get('api_secret'),
+                                "server": exchange.get('server'),
+                                "balance": exchange.get('balance'),
+                                "equity": exchange.get('equity'),
+                                "investment_size": investment_size,
+                                "currency": exchange['account_exch'].get('currency'),
+                                "access_dcs": True,
+                            }
+                            investor_values = Account(**investor_data).dict()
+                            if not investor_result:
+                                insert_investor_account = insert(account).values(investor_values)
+                                insert_investor = insert(investor).values({
+                                    'investor_pk': id,
+                                    'leader_pk': invest.get('leader_account'),
+                                    'account_pk': invest.get('id'),
+                                })
+                                with engine.connect() as conn:
+                                    conn.execute(insert_investor_account)
+                                    conn.commit()
+                                with engine.connect() as conn:
+                                    conn.execute(insert_investor)
+                                    conn.commit()
 
-                        elif account_result and list(account_result) != list(investor_values.values()):
-                            update_investor = update(account).where(account.c.account_pk == investor_data['account_pk']
-                                                                    ).values(investor_data)
-                            with engine.connect() as conn:
-                                conn.execute(update_investor)
-                                conn.commit()
+                            elif list(account_result) != list(investor_values.values()):
+                                update_investor = update(account).where(account.c.account_pk == id).values(investor_values)
+                                with engine.connect() as conn:
+                                    conn.execute(update_investor)
+                                    conn.commit()
 
                     for option in options:
                         option['investment'] = option['investment_one_size']
-                        values = Options(**options).dict()
+                        values = Options(**option).dict()
                         leader_data = {
                             "account_pk": 1,
                             "login": options['leader_login'],
