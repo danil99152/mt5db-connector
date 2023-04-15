@@ -226,10 +226,10 @@ async def get_options() -> list[dict] | str:
         return Exceptions().get_exception(e)
 
 
-@router.delete('/position-history/delete/{position_id}', response_class=JSONResponse)
-async def delete_position_history(position_id: int) -> str:
+@router.delete('/position-history/delete/{ticket}', response_class=JSONResponse)
+async def delete_position_history(ticket: int) -> str:
     try:
-        statement = delete(position_history).where(position_history.c.position_pk == position_id)
+        statement = delete(position_history).where(position_history.c.ticket == ticket)
         with engine.connect() as conn:
             conn.execute(statement)
             conn.commit()
@@ -238,10 +238,10 @@ async def delete_position_history(position_id: int) -> str:
         return Exceptions().delete_exception(e)
 
 
-@router.get('/position-history/get/{position_id}/', response_class=JSONResponse)
-async def get_position_history(position_id: int) -> list[dict] | str:
+@router.get('/position-history/get/{ticket}/', response_class=JSONResponse)
+async def get_position_history(ticket: int) -> list[dict] | str:
     try:
-        statement = select(position_history).where(position_history.c.position_pk == position_id)
+        statement = select(position_history).where(position_history.c.ticket == ticket)
         with engine.connect() as conn:
             result = conn.execute(statement).fetchall()
             conn.commit()
@@ -265,6 +265,8 @@ async def get_position_history_list() -> list[dict] | str:
             conn.commit()
         response = []
         for res in result:
+            res = list(res)
+            del res[0]
             d = {}
             for key, value in zip(PositionHistory.__annotations__, res):
                 d[key] = value

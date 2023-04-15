@@ -53,6 +53,7 @@ class Position(BaseModel):
     time_close: int
     active: bool
     profit: float
+    investment_size: float
 
 
 class Account(BaseModel):
@@ -64,10 +65,10 @@ class Account(BaseModel):
     equity: float
     currency: str
     access_dcs: bool
+    investment_size: float
 
 
 class PositionHistory(BaseModel):
-    id: int
     ticket: int
     exchange: str
     user_id: str
@@ -115,3 +116,4 @@ class PositionHistory(BaseModel):
     slip_time: float
     magic: str
     comment: str
+    drawdown: float
