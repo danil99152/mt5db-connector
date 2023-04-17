@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     host_investor = 'https://my.atimex.io:8000/api/investor/list'
     host_history = 'https://my.atimex.io:8000/api/history/list'
 
-    address = '91.228.224.105' if DEBUG else 'localhost'
+    address = '91.228.224.105'
     SQLALCHEMY_DATABASE_URL = f'postgresql://postgres:root@{address}:5432/mt5db'
 
 
