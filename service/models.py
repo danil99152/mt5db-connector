@@ -85,7 +85,7 @@ account = Table(
     Column('balance', Float, index=True, nullable=False),
     Column('equity', Float, index=True, nullable=False),
     Column('currency', String, index=True),
-    Column('access_dcs', String, index=True, nullable=False, default=True),
+    Column('access_dcs',  Boolean, index=True, nullable=False),
     Column('investment_size', Float, index=True, nullable=False, default=0),
 )
 

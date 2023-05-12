@@ -5,8 +5,6 @@ from pydantic.validators import IPv4Address
 
 
 class Settings(BaseSettings):
-    DEBUG: bool = True
-
     APP_TITLE: constr(min_length=1, max_length=255) = 'MT5Connector'
     APP_VERSION: constr(min_length=1, max_length=15) = '1'
     APP_HOST: constr(min_length=1, max_length=15) = str(IPv4Address('0.0.0.0'))
@@ -15,6 +13,7 @@ class Settings(BaseSettings):
 
     host = 'https://my.atimex.io:8000/api/demo_mt5/last'
     host_investor = 'https://my.atimex.io:8000/api/investor/list'
+    host_leader = 'https://my.atimex.io:8000/api/leader/list'
     host_history = 'https://my.atimex.io:8000/api/history/list'
 
     address = '91.228.224.105'
