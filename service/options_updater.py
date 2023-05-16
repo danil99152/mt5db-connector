@@ -96,6 +96,10 @@ class OptionsUpdater:
     def get_investor_from_api(id):
         return json.loads(requests.get(f'http://127.0.0.1:8000/api/investor/get/{id}').text)
 
+    @staticmethod
+    def get_strategy_from_api(id):
+        return json.loads(requests.get(f'http://127.0.0.1:8000/api/strategy-detail/{id}').text)
+
     async def update_options(self):
         while True:
             try:
@@ -186,6 +190,8 @@ class OptionsUpdater:
                             }
                             investor_values = Account(**investor_data).dict()
                             investor_strategies = self.get_investor_from_api(account_id).get('strategies_investor')
+                            leader_ids = [self.get_strategy_from_api(i).get('user_leader').get('id')
+                                          for i in investor_strategies]
                             if not investor_result:
                                 insert_investor_account = insert(account).values(investor_values)
                                 insert_investor = insert(investor).values({
