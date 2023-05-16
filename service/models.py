@@ -69,16 +69,16 @@ container = Table(
     "container",
     metadata_obj,
 
-    Column('container_pk', Integer, primary_key=True, index=True),
+    Column('container_pk', Integer, primary_key=True, index=True, autoincrement=True),
     Column('account_pk', Integer, ForeignKey("account.account_pk"), nullable=False),
-    Column('port', Integer, index=True, nullable=False),
+    Column('name', String, index=True, nullable=False),
 )
 
 account = Table(
     "account",
     metadata_obj,
 
-    Column('account_pk', Integer, primary_key=True, index=True, autoincrement=False),
+    Column('account_pk', Integer, primary_key=True, index=True, autoincrement=True),
     Column('login', String, index=True, nullable=False),
     Column('password', String, index=True, nullable=False),
     Column('server', String, index=True, nullable=False),
