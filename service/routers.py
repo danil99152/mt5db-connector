@@ -4,7 +4,7 @@ from starlette.responses import JSONResponse
 
 from exceptions import Exceptions
 from service.configs import Position, Options, Exchange, PositionHistory
-from service.models import atimex_options, position, engine, exchange, position_history
+from service.models import atimex_options, position, engine, exchange, position_history, investor_leader
 
 router = APIRouter()
 
@@ -25,7 +25,7 @@ async def get_positions(exchange_id: int) -> list[dict] | str:
             response.append(d)
         return response
     except Exception as e:
-        Exceptions().get_exception(e)
+        return Exceptions().get_exception(e)
 
 
 @router.get('/position/list/all/', response_class=JSONResponse)
@@ -43,7 +43,36 @@ async def get_all_positions() -> list[dict] | str:
             response.append(d)
         return response
     except Exception as e:
-        Exceptions().get_exception(e)
+        return Exceptions().get_exception(e)
+
+@router.get('/relate/list/', response_class=JSONResponse)
+async def get_relates() -> list | str:
+    try:
+        statement = select(investor_leader)
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
+        response = []
+        for value in result:
+            response.append(int(value[0]))
+        return response
+    except Exception as e:
+        return Exceptions().get_exception(e)
+
+@router.get('/relate/get/{investor_id}/{leader_id}/', response_class=JSONResponse)
+async def get_relate(investor_id: int, leader_id: int) -> list | str:
+    try:
+        statement = select(investor_leader).where(and_(investor_leader.c.investor_id == investor_id,
+                                                       investor_leader.c.leader_id == leader_id))
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
+        response = []
+        for value in result:
+            response.append(int(value[0]))
+        return response
+    except Exception as e:
+        return Exceptions().get_exception(e)
 
 
 # for investors
@@ -81,7 +110,7 @@ async def get_position(exchange_id: int, ticket: int) -> list[dict] | str:
             response.append(d)
         return response
     except Exception as e:
-        Exceptions().get_exception(e)
+        return Exceptions().get_exception(e)
 
 
 # for leader
@@ -144,7 +173,7 @@ async def get_exchange(exchange_id: int) -> list[dict] | str:
             response.append(d)
         return response
     except Exception as e:
-        Exceptions().get_exception(e)
+        return Exceptions().get_exception(e)
 
 @router.delete('/exchange/delete/{exchange_id}/', response_class=JSONResponse)
 async def delete_position(exchange_id: int) -> str:
@@ -248,7 +277,7 @@ async def get_position_history(ticket: int) -> list[dict] | str:
             response.append(d)
         return response
     except Exception as e:
-        Exceptions().get_exception(e)
+        return Exceptions().get_exception(e)
 
 
 @router.get('/position-history/list/', response_class=JSONResponse)
@@ -285,13 +314,29 @@ async def post_position_history(request: PositionHistory) -> str:
 
 
 @router.get('/leader_id_by_investor/get/{investor_id}/', response_class=JSONResponse)
-async def get_leader_id_by_investor_id(investor_id: int) -> int | str:
+async def get_leader_id_by_investor_id(investor_id: int) -> list | str:
     try:
-        statement = select(investor.c.leader_pk).where(investor.c.investor_pk == investor_id)
+        statement = select(investor_leader.c.leader_id).where(investor_leader.c.investor_id == investor_id)
         with engine.connect() as conn:
             result = conn.execute(statement).fetchall()
             conn.commit()
-        response = int(result[0][0])
+        response = []
+        for value in result:
+            response.append(int(value[0]))
         return response
     except Exception as e:
-        Exceptions().get_exception(e)
+        return Exceptions().get_exception(e)
+
+@router.get('/investor_id_by_leader/get/{leader_id}/', response_class=JSONResponse)
+async def get_investor_id_by_leader_id(leader_id: int) -> list | str:
+    try:
+        statement = select(investor_leader.c.investor_id).where(investor_leader.c.leader_id == leader_id)
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
+        response = []
+        for value in result:
+            response.append(int(value[0]))
+        return response
+    except Exception as e:
+        return Exceptions().get_exception(e)

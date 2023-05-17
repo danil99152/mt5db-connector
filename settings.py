@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     host_exchanges = f'{address}/api/exchanges/list'
     host_strategy = f'{address}/api/strategy-list'
 
-    address = '91.228.224.105'
+    address = 'localhost'
     SQLALCHEMY_DATABASE_URL = f'postgresql://postgres:root@{address}:5432/mt5db'
 
 
