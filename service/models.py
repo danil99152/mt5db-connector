@@ -13,7 +13,7 @@ atimex_options = Table(
     metadata_obj,
 
     Column('id', Integer, primary_key=True, index=True),
-    Column('investor_pk', Integer, ForeignKey("investor.investor_pk"), nullable=False),
+    Column('exchange_pk', Integer, ForeignKey("exchange.exchange_pk"), nullable=False),
     Column('investment', String, index=True, default=Null),
     Column('deal_in_plus', Float, index=True, default=Null),
     Column('deal_in_minus', Float, index=True, default=Null),
@@ -51,7 +51,7 @@ container = Table(
     metadata_obj,
 
     Column('container_pk', Integer, primary_key=True, index=True, autoincrement=True),
-    Column('account_pk', Integer, ForeignKey("account.account_pk"), nullable=False),
+    Column('exchange_pk', Integer, ForeignKey("exchange.exchange_pk"), nullable=False),
     Column('name', String, index=True, nullable=False),
 )
 

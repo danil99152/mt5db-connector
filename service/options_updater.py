@@ -6,7 +6,7 @@ import requests
 from sqlalchemy import update, insert, select, and_
 
 from service.configs import Exchange
-from service.models import atimex_options, engine, exchange, container, investor_leader
+from service.models import engine, exchange, container, investor_leader
 from settings import settings
 
 
@@ -46,11 +46,11 @@ class OptionsUpdater:
 
     @staticmethod
     def get_investor_from_api(id):
-        return json.loads(requests.get(f'http://127.0.0.1:8000/api/investor/get/{id}').text)
+        return json.loads(requests.get(f'{settings.address}/api/investor/get/{id}').text)
 
     @staticmethod
     def get_strategy_from_api(id):
-        return json.loads(requests.get(f'http://127.0.0.1:8000/api/strategy-detail/{id}').text)
+        return json.loads(requests.get(f'{settings.address}/api/strategy-detail/{id}').text)
 
     async def update_options(self):
         while True:
@@ -127,7 +127,7 @@ class OptionsUpdater:
                                                      exchanges))
                     for invest in investor_exchanges:
                         invest_id = invest.get('id')
-                        account_id = invest.get('users_connect').get('id')
+                        account_id = invest.get('account_exch').get('id')
                         investor_strategies = self.get_investor_from_api(account_id).get('strategies_investor')
                         leader_ids = [self.get_strategy_from_api(i).get('user_leader').get('id')
                                       for i in investor_strategies]
