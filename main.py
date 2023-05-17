@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from routers import services_router
-from service.models import leader, investor, position, atimex_options, engine, account, container, position_history
+from service.models import position, atimex_options, engine, container, position_history, exchange, investor_leader
 from service.options_updater import between_callback
 from settings import settings
 
@@ -27,9 +27,8 @@ app.add_middleware(middleware_class=CORSMiddleware,
 app.include_router(router=services_router)
 
 if __name__ == '__main__':
-    account.create(engine, checkfirst=True)
-    leader.create(engine, checkfirst=True)
-    investor.create(engine, checkfirst=True)
+    exchange.create(engine, checkfirst=True)
+    investor_leader.create(engine, checkfirst=True)
     container.create(engine, checkfirst=True)
     position.create(engine, checkfirst=True)
     position_history.create(engine, checkfirst=True)

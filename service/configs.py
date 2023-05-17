@@ -37,7 +37,7 @@ class Options(BaseModel):
 
 class Position(BaseModel):
     ticket: int
-    account_pk: int
+    exchange_pk: int
     time: int
     time_update: int
     type: int
@@ -56,8 +56,8 @@ class Position(BaseModel):
     investment_size: float
 
 
-class Account(BaseModel):
-    account_pk: int
+class Exchange(BaseModel):
+    exchange_pk: int
     login: str
     password: str
     server: str
@@ -66,6 +66,7 @@ class Account(BaseModel):
     currency: str
     access_dcs: bool
     investment_size: float
+    type: str
 
 
 class PositionHistory(BaseModel):

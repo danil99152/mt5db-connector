@@ -3,17 +3,17 @@ from sqlalchemy import select, delete, insert, update, and_
 from starlette.responses import JSONResponse
 
 from exceptions import Exceptions
-from service.configs import Position, Options, Account, PositionHistory
-from service.models import atimex_options, position, engine, account, leader, investor, position_history
+from service.configs import Position, Options, Exchange, PositionHistory
+from service.models import atimex_options, position, engine, exchange, position_history
 
 router = APIRouter()
 
 
 # for investors
-@router.get('/position/list/{account_id}/', response_class=JSONResponse)
-async def get_positions(account_id: int) -> list[dict] | str:
+@router.get('/position/list/{exchange_id}/', response_class=JSONResponse)
+async def get_positions(exchange_id: int) -> list[dict] | str:
     try:
-        statement = select(position).where(position.c.account_pk == account_id)
+        statement = select(position).where(position.c.exchange_pk == exchange_id)
         with engine.connect() as conn:
             result = conn.execute(statement).fetchall()
             conn.commit()
@@ -47,10 +47,10 @@ async def get_all_positions() -> list[dict] | str:
 
 
 # for investors
-@router.get('/position/list/active/{account_id}/', response_class=JSONResponse)
-async def get_active_positions(account_id: int) -> list[dict] | str:
+@router.get('/position/list/active/{exchange_id}/', response_class=JSONResponse)
+async def get_active_positions(exchange_id: int) -> list[dict] | str:
     try:
-        statement = select(position).where(and_(position.c.active == True), (position.c.account_pk == account_id))
+        statement = select(position).where(and_(position.c.active == True), (position.c.exchange_pk == exchange_id))
         with engine.connect() as conn:
             result = conn.execute(statement).fetchall()
             conn.commit()
@@ -66,10 +66,10 @@ async def get_active_positions(account_id: int) -> list[dict] | str:
 
 
 # for investors
-@router.get('/position/get/{account_id}/{ticket}/', response_class=JSONResponse)
-async def get_position(account_id: int, ticket: int) -> list[dict] | str:
+@router.get('/position/get/{exchange_id}/{ticket}/', response_class=JSONResponse)
+async def get_position(exchange_id: int, ticket: int) -> list[dict] | str:
     try:
-        statement = select(position).where(position.c.ticket == ticket and position.c.account_pk == account_id)
+        statement = select(position).where(position.c.ticket == ticket and position.c.exchange_pk == exchange_id)
         with engine.connect() as conn:
             result = conn.execute(statement).fetchall()
             conn.commit()
@@ -99,8 +99,8 @@ async def post_position(request: Position) -> str:
 
 
 # for leader
-@router.patch('/position/patch/{account_id}/{ticket}/', response_class=JSONResponse)
-async def patch_position(account_id: int, ticket: int, request: dict) -> str:
+@router.patch('/position/patch/{exchange_id}/{ticket}/', response_class=JSONResponse)
+async def patch_position(exchange_id: int, ticket: int, request: dict) -> str:
     # for example, request can be like that:
     # {
     #     "profit": 600
@@ -108,7 +108,7 @@ async def patch_position(account_id: int, ticket: int, request: dict) -> str:
 
     try:
         statement = update(position).where(position.c.ticket == ticket
-                                           and position.c.account_pk == account_id).values(request)
+                                           and position.c.exchange_pk == exchange_id).values(request)
         with engine.connect() as conn:
             conn.execute(statement)
             conn.commit()
@@ -117,10 +117,10 @@ async def patch_position(account_id: int, ticket: int, request: dict) -> str:
         return Exceptions().patch_exception(e)
 
 
-@router.patch('/account/patch/{account_id}/', response_class=JSONResponse)
-async def patch_account(account_id: int, request: dict) -> str:
+@router.patch('/exchange/patch/{exchange_id}/', response_class=JSONResponse)
+async def patch_exchange(exchange_id: int, request: dict) -> str:
     try:
-        statement = update(account).where(account.c.account_pk == account_id).values(request)
+        statement = update(exchange).where(exchange.c.exchange_pk == exchange_id).values(request)
         with engine.connect() as conn:
             conn.execute(statement)
             conn.commit()
@@ -129,57 +129,52 @@ async def patch_account(account_id: int, request: dict) -> str:
         return Exceptions().patch_exception(e)
 
 
-@router.get('/account/get/{account_id}/', response_class=JSONResponse)
-async def get_account(account_id: int) -> list[dict] | str:
+@router.get('/exchange/get/{exchange_id}/', response_class=JSONResponse)
+async def get_exchange(exchange_id: int) -> list[dict] | str:
     try:
-        statement = select(account).where(account.c.account_pk == account_id)
+        statement = select(exchange).where(exchange.c.exchange_pk == exchange_id)
         with engine.connect() as conn:
             result = conn.execute(statement).fetchall()
             conn.commit()
         response = []
         for res in result:
             d = {}
-            for key, value in zip(Account.__annotations__, res):
+            for key, value in zip(Exchange.__annotations__, res):
                 d[key] = value
             response.append(d)
         return response
     except Exception as e:
         Exceptions().get_exception(e)
 
-
-@router.get('/leader_id/get/{account_id}/', response_class=JSONResponse)
-async def get_leader_id(account_id: int) -> int | str:
+@router.delete('/exchange/delete/{exchange_id}/', response_class=JSONResponse)
+async def delete_position(exchange_id: int) -> str:
     try:
-        statement = select(leader.c.leader_pk).where(leader.c.account_pk == account_id)
+        statement = delete(exchange).where(exchange.c.exchange_pk == exchange_id)
         with engine.connect() as conn:
-            result = conn.execute(statement).fetchall()
+            conn.execute(statement)
             conn.commit()
-        response = int(result[0][0])
-        return response
+        return "Exchange deleted"
     except Exception as e:
-        Exceptions().get_exception(e)
+        return Exceptions().delete_exception(e)
 
-
-@router.get('/investors_id/get/{leader_id}/', response_class=JSONResponse)
-async def get_investors(leader_id: int) -> list | str:
+@router.post('/exchange/post', response_class=JSONResponse)
+async def post_exchange(request: Exchange) -> str:
     try:
-        statement = select(investor.c.investor_pk).where(investor.c.leader_pk == leader_id)
+        statement = insert(exchange).values(request.dict())
         with engine.connect() as conn:
-            result = conn.execute(statement).fetchall()
+            conn.execute(statement)
             conn.commit()
-        response = []
-        for value in result:
-            response.append(int(value[0]))
-        return response
+        return "Posted"
     except Exception as e:
-        Exceptions().get_exception(e)
+        engine.connect().close()
+        return Exceptions().post_exception(e)
 
 
 # for leader
-@router.delete('/position/delete/{account_id}/{ticket}/', response_class=JSONResponse)
-async def delete_position(account_id: int, ticket: int) -> str:
+@router.delete('/position/delete/{exchange_id}/{ticket}/', response_class=JSONResponse)
+async def delete_exchange(exchange_id: int, ticket: int) -> str:
     try:
-        statement = delete(position).where(position.c.ticket == ticket and position.c.account_pk == account_id)
+        statement = delete(position).where(position.c.ticket == ticket and position.c.exchange_pk == exchange_id)
         with engine.connect() as conn:
             conn.execute(statement)
             conn.commit()

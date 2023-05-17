@@ -46,25 +46,6 @@ atimex_options = Table(
 )
 
 
-leader = Table(
-    "leader",
-    metadata_obj,
-
-    Column('leader_pk', Integer, primary_key=True, index=True, autoincrement=False),
-    Column('account_pk', Integer, ForeignKey("account.account_pk"), nullable=False),
-
-)
-
-
-investor = Table(
-    "investor",
-    metadata_obj,
-
-    Column('investor_pk', Integer, primary_key=True, index=True, autoincrement=False),
-    Column('leader_pk', Integer, ForeignKey("leader.leader_pk"), nullable=False),
-    Column('account_pk', Integer, ForeignKey("account.account_pk"), nullable=False),
-)
-
 container = Table(
     "container",
     metadata_obj,
@@ -74,11 +55,11 @@ container = Table(
     Column('name', String, index=True, nullable=False),
 )
 
-account = Table(
-    "account",
+exchange = Table(
+    "exchange",
     metadata_obj,
 
-    Column('account_pk', Integer, primary_key=True, index=True, autoincrement=True),
+    Column('exchange_pk', Integer, primary_key=True, index=True, autoincrement=True),
     Column('login', String, index=True, nullable=False),
     Column('password', String, index=True, nullable=False),
     Column('server', String, index=True, nullable=False),
@@ -87,6 +68,16 @@ account = Table(
     Column('currency', String, index=True),
     Column('access_dcs',  Boolean, index=True, nullable=False),
     Column('investment_size', Float, index=True, nullable=False, default=0),
+    Column('type', String, index=True, nullable=False),
+)
+
+investor_leader = Table(
+    "investor_leader",
+    metadata_obj,
+
+    Column('investor_leader_pk', Integer, primary_key=True, index=True, autoincrement=True),
+    Column('investor_id', Integer, ForeignKey("exchange.exchange_pk"), index=True, nullable=False),
+    Column('leader_id', Integer, ForeignKey("exchange.exchange_pk"), index=True, nullable=False),
 )
 
 
@@ -95,7 +86,7 @@ position = Table(
     metadata_obj,
 
     Column('ticket', Integer, primary_key=True, index=True),
-    Column('account_pk', Integer, ForeignKey("account.account_pk"), nullable=False),
+    Column('exchange_pk', Integer, ForeignKey("exchange.exchange_pk"), nullable=False),
 
     Column('time', Integer, index=True, nullable=False),
     Column('time_update', Integer, index=True, nullable=False),
