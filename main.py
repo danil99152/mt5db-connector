@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from routers import services_router
-from service.models import position, atimex_options, engine, container, position_history, exchange, investor_leader
+from service.models import position, option, engine, container, position_history, exchange, investor_leader
 from service.options_updater import between_callback
 from settings import settings
 
@@ -32,6 +32,6 @@ if __name__ == '__main__':
     container.create(engine, checkfirst=True)
     position.create(engine, checkfirst=True)
     position_history.create(engine, checkfirst=True)
-    atimex_options.create(engine, checkfirst=True)
+    option.create(engine, checkfirst=True)
     threading.Thread(target=between_callback).start()
     uvicorn.run(app=app, app_dir=settings.APP_PATH, host=settings.APP_HOST, port=settings.APP_PORT)

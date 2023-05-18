@@ -8,8 +8,8 @@ engine = create_engine(settings.SQLALCHEMY_DATABASE_URL)
 metadata_obj = MetaData()
 
 
-atimex_options = Table(
-    "atimex_options",
+option = Table(
+    "option",
     metadata_obj,
 
     Column('id', Integer, primary_key=True, index=True),

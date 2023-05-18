@@ -8,7 +8,7 @@ from starlette.responses import JSONResponse
 
 from exceptions import Exceptions
 from service.configs import Position, Options, Exchange, PositionHistory, ConnectData
-from service.models import atimex_options, position, engine, exchange, position_history, investor_leader, container
+from service.models import option, position, engine, exchange, position_history, investor_leader, container
 from settings import settings
 
 router = APIRouter()
@@ -239,7 +239,7 @@ async def delete_exchange(exchange_id: int, ticket: int) -> str:
 @router.get('/option/get/{option_id}/', response_class=JSONResponse)
 async def get_option(option_id: int) -> list[dict] | str:
     try:
-        statement = select(atimex_options).where(atimex_options.c.id == option_id)
+        statement = select(option).where(option.c.id == option_id)
         with engine.connect() as conn:
             result = conn.execute(statement).fetchall()
             conn.commit()
@@ -258,7 +258,7 @@ async def get_option(option_id: int) -> list[dict] | str:
 @router.get('/option/list/', response_class=JSONResponse)
 async def get_options() -> list[dict] | str:
     try:
-        statement = select(atimex_options)
+        statement = select(option)
         with engine.connect() as conn:
             result = conn.execute(statement).fetchall()
             conn.commit()
@@ -436,12 +436,12 @@ async def post_data(request: ConnectData) -> JSONResponse:
 
             option_values = Options(**option).dict()
             if not option_result:
-                insert_options = insert(atimex_options).values(option_values)
+                insert_options = insert(option).values(option_values)
                 with engine.connect() as conn:
                     conn.execute(insert_options)
                     conn.commit()
             elif list(option_result) != list(option_values.values()):
-                update_option = update(atimex_options).where(atimex_options.c.investor_pk == id).values(option_values)
+                update_option = update(option).where(option.c.investor_pk == id).values(option_values)
                 with engine.connect() as conn:
                     conn.execute(update_option)
                     conn.commit()
