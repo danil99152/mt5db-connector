@@ -118,3 +118,16 @@ class PositionHistory(BaseModel):
     magic: str
     comment: str
     drawdown: float
+
+
+class ConnectExchange(BaseModel):
+    user_id: int
+    login: str
+    password: str
+    server: str
+
+class ConnectData(BaseModel):
+    investor_id: int
+    leaders_ids: list[int]
+    exchanges: list[ConnectExchange]
+    options: list[Options]

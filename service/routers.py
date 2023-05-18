@@ -1,10 +1,15 @@
+import json
+import os
+
+import requests
 from fastapi import APIRouter
 from sqlalchemy import select, delete, insert, update, and_
 from starlette.responses import JSONResponse
 
 from exceptions import Exceptions
-from service.configs import Position, Options, Exchange, PositionHistory
-from service.models import atimex_options, position, engine, exchange, position_history, investor_leader
+from service.configs import Position, Options, Exchange, PositionHistory, ConnectData
+from service.models import atimex_options, position, engine, exchange, position_history, investor_leader, container
+from settings import settings
 
 router = APIRouter()
 
@@ -358,3 +363,101 @@ async def get_investor_id_by_leader_id(leader_id: int) -> list | str:
         return response
     except Exception as e:
         return Exceptions().get_exception(e)
+
+@router.post('/data/post', response_class=JSONResponse)
+async def post_data(request: ConnectData) -> JSONResponse:
+    try:
+        data = request.dict()
+        investor_id = data.get('investor_id')
+        leader_ids = data.get('leaders_ids')
+        history = json.loads(requests.get(settings.host_history).text)
+        for exch in data.get('exchanges'):
+            id = exch.get('id')
+            investment_size = sum([d.get('investment') for d in history if d['user_id'] == id])
+            type = 'investor' if id == investor_id else 'leader' if id in leader_ids else 'None'
+            option = next((item for item in data.get('options') if item["user_id"] == id), None)
+            exchanges_data = {
+                "exchange_pk": id,
+                "login": exch.get('api_key'),
+                "password": exch.get('api_secret'),
+                "server": exch.get('server'),
+                "balance": option.get('investment'),
+                "equity": option.get('equity'),
+                "investment_size": investment_size,
+                "currency": option.get('currency'),
+                "access_dcs": True,
+                "type": type
+            }
+            exchange_result = await get_exchange(id)
+            option_result = await get_option(id)
+            exchange_values = Exchange(**exchanges_data).dict()
+            if not exchange_result:
+                insert_account = insert(exchange).values(exchange_values)
+                with engine.connect() as conn:
+                    conn.execute(insert_account)
+                    conn.commit()
+
+                if type == "leader":
+                    os.system(f"docker run -e ACCOUNT_ID={id} "
+                              f"--name mt_leader{id} "
+                              f"205b28d28c91f81522f6f4335ae77aaac20c58645ad8be3d1a4e4f63380ed3b1")
+                    os.system(f"docker exec -it mt_leader{id} start_leader.sh")
+                    os.system(f"docker exec -it mt_leader{id} chmod +x /start_leader.sh")
+
+                    container_data = {
+                        "exchange_pk": id,
+                        "name": f"mt_leader{id}",
+                    }
+                    insert_relate = insert(container).values(container_data)
+                    with engine.connect() as conn:
+                        conn.execute(insert_relate)
+                        conn.commit()
+                elif type == "investor":
+                    os.system(f"docker run -e ACCOUNT_ID={id} "
+                              f"--name mt_investor{id} "
+                              f"205b28d28c91f81522f6f4335ae77aaac20c58645ad8be3d1a4e4f63380ed3b1")
+                    os.system(f"docker exec -it mt_investor{id} start_investor.sh")
+                    os.system(f"docker exec -it mt_investor{id} chmod +x /start_investor.sh")
+
+                    container_data = {
+                        "exchange_pk": id,
+                        "name": f"mt_investor{id}",
+                    }
+                    insert_relate = insert(container).values(container_data)
+                    with engine.connect() as conn:
+                        conn.execute(insert_relate)
+                        conn.commit()
+
+            elif list(exchange_result) != list(exchange_values.values()):
+                update_exchange = update(exchange).where(exchange.c.exchange_pk == id).values(exchange_values)
+                with engine.connect() as conn:
+                    conn.execute(update_exchange)
+                    conn.commit()
+
+            option_values = Options(**option).dict()
+            if not option_result:
+                insert_options = insert(atimex_options).values(option_values)
+                with engine.connect() as conn:
+                    conn.execute(insert_options)
+                    conn.commit()
+            elif list(option_result) != list(option_values.values()):
+                update_option = update(atimex_options).where(atimex_options.c.investor_pk == id).values(option_values)
+                with engine.connect() as conn:
+                    conn.execute(update_option)
+                    conn.commit()
+
+        for lead in leader_ids:
+            relate_result = await get_relate(investor_id, lead)
+            if not relate_result:
+                data = {
+                    "investor_id": investor_id,
+                    "leader_id": lead,
+                }
+                insert_relate = insert(investor_leader).values(data)
+                with engine.connect() as conn:
+                    conn.execute(insert_relate)
+                    conn.commit()
+
+        return JSONResponse(content={'result': 'ok'})
+    except Exception as e:
+        return JSONResponse(content={'result': e})
