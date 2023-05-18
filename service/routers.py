@@ -175,6 +175,24 @@ async def get_exchange(exchange_id: int) -> list[dict] | str:
     except Exception as e:
         return Exceptions().get_exception(e)
 
+
+@router.get('/exchange/list/', response_class=JSONResponse)
+async def get_exchanges() -> list[dict] | str:
+    try:
+        statement = select(exchange)
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
+        response = []
+        for res in result:
+            d = {}
+            for key, value in zip(Exchange.__annotations__, res):
+                d[key] = value
+            response.append(d)
+        return response
+    except Exception as e:
+        return Exceptions().get_exception(e)
+
 @router.delete('/exchange/delete/{exchange_id}/', response_class=JSONResponse)
 async def delete_position(exchange_id: int) -> str:
     try:
