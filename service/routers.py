@@ -372,24 +372,23 @@ async def post_data(request: ConnectData) -> JSONResponse:
         leader_ids = data.get('leaders_ids')
         history = json.loads(requests.get(settings.host_history).text)
         for exch in data.get('exchanges'):
-            id = exch.get('id')
+            id = exch.get('exchange_pk')
             investment_size = sum([d.get('investment') for d in history if d['user_id'] == id])
-            type = 'investor' if id == investor_id else 'leader' if id in leader_ids else 'None'
+            # type = 'investor' if id == investor_id else 'leader' if id in leader_ids else 'None'
             option = next((item for item in data.get('options') if item["user_id"] == id), None)
             exchanges_data = {
                 "exchange_pk": id,
-                "login": exch.get('api_key'),
-                "password": exch.get('api_secret'),
+                "login": exch.get('login'),
+                "password": exch.get('password'),
                 "server": exch.get('server'),
-                "balance": option.get('investment'),
-                "equity": option.get('equity'),
+                "balance": exch.get('balance'),
+                "equity": exch.get('equity'),
                 "investment_size": investment_size,
-                "currency": option.get('currency'),
+                "currency": exch.get('currency'),
                 "access_dcs": True,
-                "type": type
+                "type": exch.get('type')
             }
             exchange_result = await get_exchange(id)
-            option_result = await get_option(id)
             exchange_values = Exchange(**exchanges_data).dict()
             if not exchange_result:
                 insert_account = insert(exchange).values(exchange_values)
@@ -435,16 +434,18 @@ async def post_data(request: ConnectData) -> JSONResponse:
                     conn.commit()
 
             option_values = Options(**option).dict()
-            if not option_result:
-                insert_options = insert(option).values(option_values)
-                with engine.connect() as conn:
-                    conn.execute(insert_options)
-                    conn.commit()
-            elif list(option_result) != list(option_values.values()):
-                update_option = update(option).where(option.c.investor_pk == id).values(option_values)
-                with engine.connect() as conn:
-                    conn.execute(update_option)
-                    conn.commit()
+            if type == "investor":
+                option_result = await get_option(id)
+                if not option_result:
+                    insert_options = insert(option).values(option_values)
+                    with engine.connect() as conn:
+                        conn.execute(insert_options)
+                        conn.commit()
+                elif list(option_result) != list(option_values.values()):
+                    update_option = update(option).where(option.c.investor_pk == id).values(option_values)
+                    with engine.connect() as conn:
+                        conn.execute(update_option)
+                        conn.commit()
 
         for lead in leader_ids:
             relate_result = await get_relate(investor_id, lead)
@@ -461,3 +462,4 @@ async def post_data(request: ConnectData) -> JSONResponse:
         return JSONResponse(content={'result': 'ok'})
     except Exception as e:
         return JSONResponse(content={'result': e})
+

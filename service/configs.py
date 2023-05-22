@@ -2,7 +2,6 @@ from pydantic import BaseModel
 
 
 class Options(BaseModel):
-    id: int
     investor_pk: int
     investment: str
     deal_in_plus: float
@@ -22,12 +21,8 @@ class Options(BaseModel):
     notification: bool
     blacklist: bool
     accompany_transactions: bool
-    no_exchange_connection: bool
-    api_key_expired: bool
     closed_deals_myself: bool
     reconnected: bool
-    recovery_model: bool
-    buy_hold_model: bool
     not_enough_margin: str
     accounts_in_diff_curr: str
     synchronize_deals: bool
