@@ -33,5 +33,5 @@ if __name__ == '__main__':
     position.create(engine, checkfirst=True)
     position_history.create(engine, checkfirst=True)
     option.create(engine, checkfirst=True)
-    threading.Thread(target=between_callback).start()
+    # threading.Thread(target=between_callback).start()
     uvicorn.run(app=app, app_dir=settings.APP_PATH, host=settings.APP_HOST, port=settings.APP_PORT)
