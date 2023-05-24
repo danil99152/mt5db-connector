@@ -234,8 +234,18 @@ async def delete_exchange(exchange_id: int, ticket: int) -> str:
     except Exception as e:
         return Exceptions().delete_exception(e)
 
+@router.post('/option/post', response_class=JSONResponse)
+async def post_option(request: Options) -> str:
+    try:
+        statement = insert(option).values(request.dict())
+        with engine.connect() as conn:
+            conn.execute(statement)
+            conn.commit()
+        return "Posted"
+    except Exception as e:
+        engine.connect().close()
+        return Exceptions().post_exception(e)
 
-# for investors
 @router.get('/option/get/{option_id}/', response_class=JSONResponse)
 async def get_option(option_id: int) -> list[dict] | str:
     try:
@@ -375,7 +385,7 @@ async def post_data(request: ConnectData) -> JSONResponse:
             id = exch.get('exchange_pk')
             investment_size = sum([d.get('investment') for d in history if d['user_id'] == id])
             # type = 'investor' if id == investor_id else 'leader' if id in leader_ids else 'None'
-            option = next((item for item in data.get('options') if item["user_id"] == id), None)
+            # option = next((item for item in data.get('options') if item["user_id"] == id), None)
             exchanges_data = {
                 "exchange_pk": id,
                 "login": exch.get('login'),
@@ -433,19 +443,19 @@ async def post_data(request: ConnectData) -> JSONResponse:
                     conn.execute(update_exchange)
                     conn.commit()
 
-            option_values = Options(**option).dict()
-            if type == "investor":
-                option_result = await get_option(id)
-                if not option_result:
-                    insert_options = insert(option).values(option_values)
-                    with engine.connect() as conn:
-                        conn.execute(insert_options)
-                        conn.commit()
-                elif list(option_result) != list(option_values.values()):
-                    update_option = update(option).where(option.c.investor_pk == id).values(option_values)
-                    with engine.connect() as conn:
-                        conn.execute(update_option)
-                        conn.commit()
+            # option_values = Options(**option).dict()
+            # if type == "investor":
+            #     option_result = await get_option(id)
+            #     if not option_result:
+            #         insert_options = insert(option).values(option_values)
+            #         with engine.connect() as conn:
+            #             conn.execute(insert_options)
+            #             conn.commit()
+            #     elif list(option_result) != list(option_values.values()):
+            #         update_option = update(option).where(option.c.investor_pk == id).values(option_values)
+            #         with engine.connect() as conn:
+            #             conn.execute(update_option)
+            #             conn.commit()
 
         for lead in leader_ids:
             relate_result = await get_relate(investor_id, lead)
