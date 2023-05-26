@@ -2,7 +2,9 @@ from pydantic import BaseModel
 
 
 class Options(BaseModel):
+    exchange_pk: int
     investor_pk: int
+    leader_pk: int
     investment: str
     deal_in_plus: float
     deal_in_minus: float
@@ -53,6 +55,7 @@ class Position(BaseModel):
 
 class Exchange(BaseModel):
     exchange_pk: int
+    account_pk: int
     login: str
     password: str
     server: str
@@ -113,16 +116,3 @@ class PositionHistory(BaseModel):
     magic: str
     comment: str
     drawdown: float
-
-
-class ConnectExchange(BaseModel):
-    user_id: int
-    login: str
-    password: str
-    server: str
-
-class ConnectData(BaseModel):
-    investor_id: int
-    leaders_ids: list[int]
-    exchanges: list[ConnectExchange]
-    options: list[Options]

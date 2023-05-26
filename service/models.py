@@ -13,6 +13,8 @@ option = Table(
     metadata_obj,
 
     Column('exchange_pk', Integer, ForeignKey("exchange.exchange_pk"), primary_key=True, index=True),
+    Column('investor_pk', Integer, ForeignKey("exchange.account_pk"), index=True, nullable=False),
+    Column('leader_pk', Integer, ForeignKey("exchange.account_pk"), index=True, nullable=False),
     Column('investment', String, index=True, default=Null),
     Column('deal_in_plus', Float, index=True, default=Null),
     Column('deal_in_minus', Float, index=True, default=Null),
@@ -54,7 +56,8 @@ exchange = Table(
     "exchange",
     metadata_obj,
 
-    Column('exchange_pk', Integer, primary_key=True, index=True, autoincrement=True),
+    Column('exchange_pk', Integer, primary_key=True, index=True, nullable=False),
+    Column('account_pk', Integer, index=True, nullable=False),
     Column('login', String, index=True, nullable=False),
     Column('password', String, index=True, nullable=False),
     Column('server', String, index=True, nullable=False),
@@ -64,15 +67,6 @@ exchange = Table(
     Column('access_dcs',  Boolean, index=True, nullable=False),
     Column('investment_size', Float, index=True, nullable=False, default=0),
     Column('type', String, index=True, nullable=False),
-)
-
-investor_leader = Table(
-    "investor_leader",
-    metadata_obj,
-
-    Column('investor_leader_pk', Integer, primary_key=True, index=True, autoincrement=True),
-    Column('investor_id', Integer, ForeignKey("exchange.exchange_pk"), index=True, nullable=False),
-    Column('leader_id', Integer, ForeignKey("exchange.exchange_pk"), index=True, nullable=False),
 )
 
 

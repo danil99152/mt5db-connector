@@ -7,7 +7,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routers import services_router
 from service.models import position, option, engine, container, position_history, exchange, investor_leader
-from service.options_updater import between_callback
 from settings import settings
 
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', encoding='utf-8', level=logging.DEBUG)
@@ -33,5 +32,4 @@ if __name__ == '__main__':
     position.create(engine, checkfirst=True)
     position_history.create(engine, checkfirst=True)
     option.create(engine, checkfirst=True)
-    # threading.Thread(target=between_callback).start()
     uvicorn.run(app=app, app_dir=settings.APP_PATH, host=settings.APP_HOST, port=settings.APP_PORT)
