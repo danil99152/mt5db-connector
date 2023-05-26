@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from routers import services_router
-from service.models import position, option, engine, container, position_history, exchange, investor_leader
+from service.models import position, option, engine, container, position_history, exchange
 from settings import settings
 
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', encoding='utf-8', level=logging.DEBUG)
@@ -27,7 +27,6 @@ app.include_router(router=services_router)
 
 if __name__ == '__main__':
     exchange.create(engine, checkfirst=True)
-    investor_leader.create(engine, checkfirst=True)
     container.create(engine, checkfirst=True)
     position.create(engine, checkfirst=True)
     position_history.create(engine, checkfirst=True)
