@@ -369,6 +369,21 @@ async def get_leader_id_by_investor_id(investor_id: int) -> list | str:
     except Exception as e:
         return Exceptions().get_exception(e)
 
+
+@router.get('/leader_id_by_exchange/get/{exchange_id}/', response_class=JSONResponse)
+async def get_leader_id_by_investor_id(exchange_id: int) -> list | str:
+    try:
+        statement = select(option.c.leader_pk).where(option.c.exchange_pk == exchange_id)
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
+        response = []
+        for value in result:
+            response.append(int(value[0]))
+        return response
+    except Exception as e:
+        return Exceptions().get_exception(e)
+
 @router.get('/investor_id_by_leader/get/{leader_id}/', response_class=JSONResponse)
 async def get_investor_id_by_leader_id(leader_id: int) -> list | str:
     try:
