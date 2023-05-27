@@ -17,5 +17,8 @@ class Settings(BaseSettings):
     address = 'localhost'
     SQLALCHEMY_DATABASE_URL = f'postgresql://postgres:root@{address}:5432/mt5db'
 
+    leader_image = 'eb2e977b806b221556ae5c6217c36645a9f046fe75dc4af3a4d702dc45140c59'
+    investor_image = 'd730d83728ad252dbc8ca3c89a86ea65225753ae20d80e2faafc1e6b117fa34b'
+
 
 settings = Settings()

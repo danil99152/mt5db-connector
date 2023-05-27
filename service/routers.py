@@ -199,11 +199,10 @@ async def post_exchange(request: dict) -> JSONResponse:
             conn.execute(statement)
             conn.commit()
         if request['type'] == "leader":
-            os.system(f"docker run -e ACCOUNT_ID={id} "
-                                          f"--name mt_leader{id} "
-                                          f"205b28d28c91f81522f6f4335ae77aaac20c58645ad8be3d1a4e4f63380ed3b1")
-            os.system(f"docker exec -it mt_leader{id} start_leader.sh")
-            os.system(f"docker exec -it mt_leader{id} chmod +x /start_leader.sh")
+            os.system(f"docker run "
+                      f"-e EXCHANGE_ID={request.get('exchange_pk')} "
+                      f"--name mt_leader{id} "
+                      f"{settings.leader_image}")
 
             container_data = {
                 "exchange_pk": id,
@@ -214,11 +213,10 @@ async def post_exchange(request: dict) -> JSONResponse:
                 conn.execute(insert_relate)
                 conn.commit()
         elif type == "investor":
-            os.system(f"docker run -e ACCOUNT_ID={id} "
+            os.system(f"docker run "
+                      f"-e EXCHANGE_ID={request.get('exchange_pk')} "
                       f"--name mt_investor{id} "
-                      f"205b28d28c91f81522f6f4335ae77aaac20c58645ad8be3d1a4e4f63380ed3b1")
-            os.system(f"docker exec -it mt_investor{id} start_investor.sh")
-            os.system(f"docker exec -it mt_investor{id} chmod +x /start_investor.sh")
+                      f"{settings.investor_image}")
 
             container_data = {
                 "exchange_pk": id,
