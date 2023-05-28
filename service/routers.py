@@ -198,7 +198,7 @@ async def post_exchange(request: dict) -> JSONResponse:
         with engine.connect() as conn:
             conn.execute(statement)
             conn.commit()
-        if request['type'] == "leader":
+        if str(request.get('type')).lower() == "leader":
             os.system(f"docker run "
                       f"-e EXCHANGE_ID={request.get('exchange_pk')} "
                       f"--name mt_leader{id} "
@@ -212,7 +212,7 @@ async def post_exchange(request: dict) -> JSONResponse:
             with engine.connect() as conn:
                 conn.execute(insert_relate)
                 conn.commit()
-        elif type == "investor":
+        elif str(request.get('type')).lower() == "investor":
             os.system(f"docker run "
                       f"-e EXCHANGE_ID={request.get('exchange_pk')} "
                       f"--name mt_investor{id} "
