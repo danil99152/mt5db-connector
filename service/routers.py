@@ -1,5 +1,5 @@
 import json
-import os
+import subprocess
 
 import requests
 from fastapi import APIRouter
@@ -13,6 +13,7 @@ from settings import settings
 
 router = APIRouter()
 
+
 def dict_clean(items: dict):
     result = {}
     for key, value in items.items():
@@ -20,6 +21,7 @@ def dict_clean(items: dict):
             value = 0
         result[key] = value
     return result
+
 
 @router.get('/position/list/{exchange_id}/', response_class=JSONResponse)
 async def get_positions(exchange_id: int) -> list[dict] | str:
@@ -175,6 +177,7 @@ async def get_exchanges() -> list[dict] | str:
     except Exception as e:
         return Exceptions().get_exception(e)
 
+
 @router.delete('/exchange/delete/{exchange_id}/', response_class=JSONResponse)
 async def delete_position(exchange_id: int) -> str:
     try:
@@ -186,12 +189,16 @@ async def delete_position(exchange_id: int) -> str:
     except Exception as e:
         return Exceptions().delete_exception(e)
 
+
 @router.post('/exchange/post', response_class=JSONResponse)
 async def post_exchange(request: dict) -> JSONResponse:
     try:
         history = json.loads(requests.get(settings.host_history).text)
         id = request.get('account_pk')
-        investment_size = sum([d.get('investment') for d in history if d['user_id'] == id])
+        try:
+            investment_size = sum([d.get('investment') for d in history if d['user_id'] == id])
+        except:
+            investment_size = 0
         request['investment_size'] = investment_size
         request['access_dcs'] = True
         statement = insert(exchange).values(dict_clean(dict(request)))
@@ -199,13 +206,14 @@ async def post_exchange(request: dict) -> JSONResponse:
             conn.execute(statement)
             conn.commit()
         if str(request.get('type')).lower() == "leader":
-            os.system(f"docker run "
-                      f"-e EXCHANGE_ID={request.get('exchange_pk')} "
-                      f"--name mt_leader{id} "
-                      f"{settings.leader_image}")
+            subprocess.Popen(f"docker run "
+                             f"-e EXCHANGE_ID={request.get('exchange_pk')} "
+                             f"--name mt_leader{id} "
+                             f"{settings.leader_image}", shell=True,
+                             stdout=subprocess.PIPE)
 
             container_data = {
-                "exchange_pk": id,
+                "exchange_pk": request.get('exchange_pk'),
                 "name": f"mt_leader{id}",
             }
             insert_relate = insert(container).values(container_data)
@@ -213,13 +221,14 @@ async def post_exchange(request: dict) -> JSONResponse:
                 conn.execute(insert_relate)
                 conn.commit()
         elif str(request.get('type')).lower() == "investor":
-            os.system(f"docker run "
-                      f"-e EXCHANGE_ID={request.get('exchange_pk')} "
-                      f"--name mt_investor{id} "
-                      f"{settings.investor_image}")
+            subprocess.Popen(f"docker run "
+                             f"-e EXCHANGE_ID={request.get('exchange_pk')} "
+                             f"--name mt_investor{id} "
+                             f"{settings.investor_image}", shell=True,
+                             stdout=subprocess.PIPE)
 
             container_data = {
-                "exchange_pk": id,
+                "exchange_pk": request.get('exchange_pk'),
                 "name": f"mt_investor{id}",
             }
             insert_relate = insert(container).values(container_data)
@@ -243,6 +252,7 @@ async def delete_exchange(exchange_id: int, ticket: int) -> str:
     except Exception as e:
         return Exceptions().delete_exception(e)
 
+
 @router.post('/option/post', response_class=JSONResponse)
 async def post_option(request: Options) -> JSONResponse:
     try:
@@ -254,6 +264,7 @@ async def post_option(request: Options) -> JSONResponse:
     except Exception as e:
         engine.connect().close()
         return Exceptions().post_exception(e)
+
 
 @router.get('/option/get/{option_id}/', response_class=JSONResponse)
 async def get_option(option_id: int) -> list[dict] | str:
@@ -383,6 +394,7 @@ async def get_leader_id_by_investor_id(exchange_id: int) -> list | str:
         return response
     except Exception as e:
         return Exceptions().get_exception(e)
+
 
 @router.get('/investor_id_by_leader/get/{leader_id}/', response_class=JSONResponse)
 async def get_investor_id_by_leader_id(leader_id: int) -> list | str:
