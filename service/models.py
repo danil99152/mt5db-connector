@@ -49,8 +49,8 @@ container = Table(
     "container",
     metadata_obj,
 
-    Column('container_pk', Integer, primary_key=True, index=True, autoincrement=True),
-    Column('exchange_pk', Integer, ForeignKey("exchange.exchange_pk"), nullable=False),
+    Column('exchange_pk', Integer, ForeignKey("exchange.exchange_pk"), nullable=False, primary_key=True, index=True,
+           unique=True),
     Column('name', String, index=True, nullable=False),
 )
 
@@ -58,7 +58,7 @@ exchange = Table(
     "exchange",
     metadata_obj,
 
-    Column('exchange_pk', Integer, primary_key=True, index=True, nullable=False),
+    Column('exchange_pk', Integer, primary_key=True, index=True, nullable=False, unique=True),
     Column('account_pk', Integer, index=True, nullable=False, unique=True),
     Column('login', String, index=True, nullable=False),
     Column('password', String, index=True, nullable=False),
