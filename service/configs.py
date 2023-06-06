@@ -31,7 +31,6 @@ class Options(BaseModel):
     deals_not_opened: bool
     closed_deal_investor: bool
     is_investor: bool
-    is_trader: bool
 
 
 class Position(BaseModel):

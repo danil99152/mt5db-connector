@@ -41,7 +41,6 @@ option = Table(
     Column('deals_not_opened', Boolean, index=True, default=Null),
     Column('closed_deal_investor', Boolean, index=True, default=Null),
     Column('is_investor', Boolean, index=True, default=Null),
-    Column('is_trader', Boolean, index=True, default=Null),
 )
 
 
