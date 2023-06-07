@@ -7,7 +7,7 @@ from sqlalchemy import select, delete, insert, update, and_
 from starlette.responses import JSONResponse
 
 from exceptions import Exceptions
-from service.configs import Position, Options, Exchange, PositionHistory
+from service.configs import Position, Options, Exchange, PositionHistory, Container
 from service.models import option, position, engine, exchange, position_history, container
 from settings import settings
 
@@ -21,6 +21,46 @@ def dict_clean(items: dict):
             value = 0
         result[key] = value
     return result
+
+
+def run_cms_container(id, type):
+    subprocess.Popen(f"docker run "
+                     f"-e EXCHANGE_ID={id} "
+                     f"--name mt_{type}{id} "
+                     f"{settings.investor_cms_image if type == 'investor' else settings.leader_cms_image}",
+                     shell=True,
+                     stdout=subprocess.PIPE)
+
+    container_data = {
+        "exchange_pk": id,
+        "name": f"mt_{type}{id}",
+        "is_leader": True if type == 'leader' else False,
+        "is_cms": True
+    }
+    insert_relate = insert(container).values(container_data)
+    with engine.connect() as conn:
+        conn.execute(insert_relate)
+        conn.commit()
+
+
+def run_signal_container(id, type):
+    subprocess.Popen(f"docker run "
+                     f"-e EXCHANGE_ID={id} "
+                     f"--name mt_{type}{id} "
+                     f"{settings.investor_signal_image if type == 'investor' else settings.leader_signal_image}",
+                     shell=True,
+                     stdout=subprocess.PIPE)
+
+    container_data = {
+        "exchange_pk": id,
+        "name": f"mt_{type}{id}",
+        "is_leader": True if type == 'leader' else False,
+        "is_cms": False
+    }
+    insert_relate = insert(container).values(container_data)
+    with engine.connect() as conn:
+        conn.execute(insert_relate)
+        conn.commit()
 
 
 @router.get('/position/list/{exchange_id}/', response_class=JSONResponse)
@@ -97,7 +137,6 @@ async def get_position(exchange_id: int, ticket: int) -> list[dict] | str:
         return Exceptions().get_exception(e)
 
 
-# for leader
 @router.post('/position/post', response_class=JSONResponse)
 async def post_position(request: Position) -> str:
     try:
@@ -111,7 +150,6 @@ async def post_position(request: Position) -> str:
         return Exceptions().post_exception(e)
 
 
-# for leader
 @router.patch('/position/patch/{exchange_id}/{ticket}/', response_class=JSONResponse)
 async def patch_position(exchange_id: int, ticket: int, request: dict) -> str:
     # for example, request can be like that:
@@ -205,36 +243,6 @@ async def post_exchange(request: dict) -> JSONResponse:
         with engine.connect() as conn:
             conn.execute(statement)
             conn.commit()
-        if str(request.get('type')).lower() == "leader":
-            subprocess.Popen(f"docker run "
-                             f"-e EXCHANGE_ID={request.get('exchange_pk')} "
-                             f"--name mt_leader{id} "
-                             f"{settings.leader_image}", shell=True,
-                             stdout=subprocess.PIPE)
-
-            container_data = {
-                "exchange_pk": request.get('exchange_pk'),
-                "name": f"mt_leader{id}",
-            }
-            insert_relate = insert(container).values(container_data)
-            with engine.connect() as conn:
-                conn.execute(insert_relate)
-                conn.commit()
-        elif str(request.get('type')).lower() == "investor":
-            subprocess.Popen(f"docker run "
-                             f"-e EXCHANGE_ID={request.get('exchange_pk')} "
-                             f"--name mt_investor{id} "
-                             f"{settings.investor_image}", shell=True,
-                             stdout=subprocess.PIPE)
-
-            container_data = {
-                "exchange_pk": request.get('exchange_pk'),
-                "name": f"mt_investor{id}",
-            }
-            insert_relate = insert(container).values(container_data)
-            with engine.connect() as conn:
-                conn.execute(insert_relate)
-                conn.commit()
         return JSONResponse(content={'exchange': 'posted'})
     except Exception as e:
         engine.connect().close()
@@ -253,6 +261,26 @@ async def delete_exchange(exchange_id: int, ticket: int) -> str:
         return Exceptions().delete_exception(e)
 
 
+@router.get('/container/get/{exchange_id}/{type}', response_class=JSONResponse)
+async def get_container(exchange_id: int, is_cms: bool) -> list[dict] | str:
+    try:
+        statement = select(container).where(and_(container.c.exchange_pk == exchange_id,
+                                                 container.c.is_cms == is_cms))
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
+        response = []
+        for res in result:
+            d = {}
+            for key, value in zip(Container.__annotations__, res):
+                d[key] = value
+            response.append(d)
+        return response
+
+    except Exception as e:
+        return Exceptions().get_exception(e)
+
+
 @router.post('/option/post', response_class=JSONResponse)
 async def post_option(request: Options) -> JSONResponse:
     try:
@@ -260,6 +288,18 @@ async def post_option(request: Options) -> JSONResponse:
         with engine.connect() as conn:
             conn.execute(statement)
             conn.commit()
+        if request.is_investor:
+            # run leader container
+            if not get_container(request.leader_pk, request.is_investor):
+                run_cms_container(request.leader_pk, 'leader')
+            # run investor container
+            run_cms_container(request.exchange_pk, 'investor')
+        else:
+            # run leader container
+            if not get_container(request.leader_pk, request.is_investor):
+                run_signal_container(request.leader_pk, 'leader')
+            # run investor container
+            run_signal_container(request.exchange_pk, 'investor')
         return JSONResponse(content={'option': 'posted'})
     except Exception as e:
         engine.connect().close()

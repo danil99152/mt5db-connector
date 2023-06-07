@@ -117,3 +117,11 @@ class PositionHistory(BaseModel):
     magic: str
     comment: str
     drawdown: float
+
+
+class Container(BaseModel):
+    container_pk: int
+    exchange_pk: int
+    name: str
+    is_leader: bool
+    is_cms: bool

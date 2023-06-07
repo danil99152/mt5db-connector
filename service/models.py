@@ -48,9 +48,12 @@ container = Table(
     "container",
     metadata_obj,
 
-    Column('exchange_pk', Integer, ForeignKey("exchange.exchange_pk"), nullable=False, primary_key=True, index=True,
-           unique=True),
+    Column('container_pk', Integer, primary_key=True, index=True, nullable=False, unique=True, autoincrement=True),
+    Column('exchange_pk', Integer, ForeignKey("exchange.exchange_pk"), nullable=False, index=True),
     Column('name', String, index=True, nullable=False),
+    Column('is_leader', Boolean, index=True, nullable=False),
+    Column('is_cms', Boolean, index=True, nullable=False),
+
 )
 
 exchange = Table(
