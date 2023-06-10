@@ -290,13 +290,13 @@ async def post_option(request: Options) -> JSONResponse:
             conn.commit()
         if request.is_investor:
             # run leader container
-            if not get_container(request.leader_pk, request.is_investor):
+            if not await get_container(request.leader_pk, request.is_investor):
                 run_cms_container(request.leader_pk, 'leader')
             # run investor container
             run_cms_container(request.exchange_pk, 'investor')
         else:
             # run leader container
-            if not get_container(request.leader_pk, request.is_investor):
+            if not await get_container(request.leader_pk, request.is_investor):
                 run_signal_container(request.leader_pk, 'leader')
             # run investor container
             run_signal_container(request.exchange_pk, 'investor')
