@@ -406,7 +406,7 @@ async def post_position_history(request: PositionHistory) -> str:
         return Exceptions().post_exception(e)
 
 
-@router.get('/leader_id_by_investor/get/{investor_id}/', response_class=JSONResponse)
+@router.get('/leader-id-by-investor/get/{investor_id}/', response_class=JSONResponse)
 async def get_leader_id_by_investor_id(investor_id: int) -> list | str:
     try:
         statement = select(option.c.leader_pk).where(option.c.investor_pk == investor_id)
@@ -421,8 +421,8 @@ async def get_leader_id_by_investor_id(investor_id: int) -> list | str:
         return Exceptions().get_exception(e)
 
 
-@router.get('/leader_id_by_exchange/get/{exchange_id}/', response_class=JSONResponse)
-async def get_leader_id_by_investor_id(exchange_id: int) -> list | str:
+@router.get('/leader-id-by-exchange/get/{exchange_id}/', response_class=JSONResponse)
+async def get_leader_id_by_exchange_id(exchange_id: int) -> list | str:
     try:
         statement = select(option.c.leader_pk).where(option.c.exchange_pk == exchange_id)
         with engine.connect() as conn:
@@ -436,7 +436,7 @@ async def get_leader_id_by_investor_id(exchange_id: int) -> list | str:
         return Exceptions().get_exception(e)
 
 
-@router.get('/investor_id_by_leader/get/{leader_id}/', response_class=JSONResponse)
+@router.get('/investor-id-by-leader/get/{leader_id}/', response_class=JSONResponse)
 async def get_investor_id_by_leader_id(leader_id: int) -> list | str:
     try:
         statement = select(option.c.investor_pk).where(option.c.leader_pk == leader_id)
