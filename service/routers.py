@@ -293,13 +293,13 @@ async def post_option(request: Options) -> JSONResponse:
             if not await get_container(request.leader_pk, request.is_investor):
                 run_cms_container(request.leader_pk, 'leader')
             # run investor container
-            run_cms_container(request.exchange_pk, 'investor')
+            run_cms_container(request.investor_pk, 'investor')
         else:
             # run leader container
             if not await get_container(request.leader_pk, request.is_investor):
                 run_signal_container(request.leader_pk, 'leader')
             # run investor container
-            run_signal_container(request.exchange_pk, 'investor')
+            run_signal_container(request.investor_pk, 'investor')
         return JSONResponse(content={'option': 'posted'})
     except Exception as e:
         engine.connect().close()

@@ -12,9 +12,10 @@ option = Table(
     "option",
     metadata_obj,
 
-    Column('exchange_pk', Integer, ForeignKey("exchange.exchange_pk"), primary_key=True, index=True),
-    Column('investor_pk', Integer, ForeignKey("exchange.account_pk"), index=True, nullable=False, unique=True),
-    Column('leader_pk', Integer, ForeignKey("exchange.account_pk"), index=True, nullable=False, unique=True),
+    Column('option_pk', Integer, primary_key=True, index=True, autoincrement=True),
+    Column('exchange_pk', Integer, ForeignKey("exchange.exchange_pk"), index=True),
+    Column('investor_pk', Integer, ForeignKey("exchange.account_pk"), index=True),
+    Column('leader_pk', Integer, ForeignKey("exchange.account_pk"), index=True),
     Column('investment', String, index=True, default=Null),
     Column('deal_in_plus', Float, index=True, default=Null),
     Column('deal_in_minus', Float, index=True, default=Null),

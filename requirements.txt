@@ -1,7 +1,7 @@
-fastapi==0.96.0
+fastapi==0.97.0
 uvicorn==0.22.0
 pydantic==1.10.9
 starlette==0.28.0
-SQLAlchemy==2.0.15
+SQLAlchemy==2.0.16
 psycopg2==2.9.6
 requests==2.31.0
