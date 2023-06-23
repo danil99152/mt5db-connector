@@ -103,7 +103,7 @@ async def get_all_positions() -> list[dict] | str:
 @router.get('/position/list/active/{exchange_id}/', response_class=JSONResponse)
 async def get_active_positions(exchange_id: int) -> list[dict] | str:
     try:
-        statement = select(position).where(and_(position.c.active == True), (position.c.exchange_pk == exchange_id))
+        statement = select(position).where(and_(position.c.active), (position.c.exchange_pk == exchange_id))
         with engine.connect() as conn:
             result = conn.execute(statement).fetchall()
             conn.commit()
@@ -122,7 +122,7 @@ async def get_active_positions(exchange_id: int) -> list[dict] | str:
 @router.get('/position/get/{exchange_id}/{ticket}/', response_class=JSONResponse)
 async def get_position(exchange_id: int, ticket: int) -> list[dict] | str:
     try:
-        statement = select(position).where(position.c.ticket == ticket and position.c.exchange_pk == exchange_id)
+        statement = select(position).where(and_(position.c.ticket == ticket, position.c.exchange_pk == exchange_id))
         with engine.connect() as conn:
             result = conn.execute(statement).fetchall()
             conn.commit()
@@ -158,8 +158,8 @@ async def patch_position(exchange_id: int, ticket: int, request: dict) -> str:
     # }
 
     try:
-        statement = update(position).where(position.c.ticket == ticket
-                                           and position.c.exchange_pk == exchange_id).values(request)
+        statement = update(position).where(and_(position.c.ticket == ticket,
+                                                position.c.exchange_pk == exchange_id)).values(request)
         with engine.connect() as conn:
             conn.execute(statement)
             conn.commit()
@@ -252,7 +252,7 @@ async def post_exchange(request: dict) -> JSONResponse:
 @router.delete('/position/delete/{exchange_id}/{ticket}/', response_class=JSONResponse)
 async def delete_exchange(exchange_id: int, ticket: int) -> str:
     try:
-        statement = delete(position).where(position.c.ticket == ticket and position.c.exchange_pk == exchange_id)
+        statement = delete(position).where(and_(position.c.ticket == ticket, position.c.exchange_pk == exchange_id))
         with engine.connect() as conn:
             conn.execute(statement)
             conn.commit()
