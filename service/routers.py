@@ -306,10 +306,10 @@ async def post_option(request: Options) -> JSONResponse:
         return Exceptions().post_exception(e)
 
 
-@router.get('/option/get/{option_id}/', response_class=JSONResponse)
-async def get_option(option_id: int) -> list[dict] | str:
+@router.get('/option/get/{leader_id}/', response_class=JSONResponse)
+async def get_option(leader_id: int) -> list[dict] | str:
     try:
-        statement = select(option).where(option.c.id == option_id)
+        statement = select(option).where(option.c.leader_pk == leader_id)
         with engine.connect() as conn:
             result = conn.execute(statement).fetchall()
             conn.commit()

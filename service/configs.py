@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 
 class Options(BaseModel):
+    option_pk: int
     exchange_pk: int
     investor_pk: int
     leader_pk: int
