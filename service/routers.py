@@ -118,6 +118,24 @@ async def get_active_positions(exchange_id: int) -> list[dict] | str:
         return Exceptions().get_exception(e)
 
 
+@router.get('/position/list/not-active/{exchange_id}/', response_class=JSONResponse)
+async def get_not_active_positions(exchange_id: int) -> list[dict] | str:
+    try:
+        statement = select(position).where(and_(not position.c.active), (position.c.exchange_pk == exchange_id))
+        with engine.connect() as conn:
+            result = conn.execute(statement).fetchall()
+            conn.commit()
+        response = []
+        for res in result:
+            d = {}
+            for key, value in zip(Position.__annotations__, res):
+                d[key] = value
+            response.append(d)
+        return response
+    except Exception as e:
+        return Exceptions().get_exception(e)
+
+
 # for investors
 @router.get('/position/get/{exchange_id}/{ticket}/', response_class=JSONResponse)
 async def get_position(exchange_id: int, ticket: int) -> list[dict] | str:
