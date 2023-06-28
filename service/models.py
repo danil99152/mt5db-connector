@@ -1,5 +1,5 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float, Null, create_engine, Table, \
-    MetaData
+    MetaData, BIGINT
 
 from settings import settings
 
@@ -79,7 +79,7 @@ position = Table(
     "position",
     metadata_obj,
 
-    Column('ticket', Integer, primary_key=True, index=True),
+    Column('ticket', BIGINT, primary_key=True, index=True),
     Column('exchange_pk', Integer, ForeignKey("exchange.exchange_pk"), nullable=False),
 
     Column('time', Integer, index=True, nullable=False),
@@ -104,8 +104,8 @@ position_history = Table(
     "position_history",
     metadata_obj,
 
-    Column('id', Integer, primary_key=True, index=True),
-    Column('ticket', Integer, ForeignKey("position.ticket"), nullable=False),
+    Column('id', Integer, primary_key=True, index=True, nullable=False, unique=True, autoincrement=True),
+    Column('ticket', BIGINT, ForeignKey("position.ticket"), nullable=False),
 
     Column('exchange', String, index=True, nullable=False),
     Column('user_id', String, index=True, nullable=False),
@@ -147,7 +147,7 @@ position_history = Table(
     Column('duration', Float, index=True, nullable=False),
     Column('minimum', Float, index=True, nullable=False),
     Column('maximum', Float, index=True, nullable=False),
-    Column('risk_reward', String, index=True, nullable=False),
+    Column('risk_reward', Integer, index=True, nullable=False),
     Column('roi_missed', Float, index=True, nullable=False),
     Column('slip_percent', Float, index=True, nullable=False),
     Column('slip_time', Float, index=True, nullable=False),
