@@ -121,7 +121,7 @@ async def get_active_positions(exchange_id: int) -> list[dict] | str:
 @router.get('/position/list/not-active/{exchange_id}/', response_class=JSONResponse)
 async def get_not_active_positions(exchange_id: int) -> list[dict] | str:
     try:
-        statement = select(position).where(and_(not position.c.active), (position.c.exchange_pk == exchange_id))
+        statement = select(position).where(and_(position.c.active == False), (position.c.exchange_pk == exchange_id))
         with engine.connect() as conn:
             result = conn.execute(statement).fetchall()
             conn.commit()
