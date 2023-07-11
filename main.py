@@ -1,5 +1,4 @@
 import logging
-import threading
 
 import uvicorn
 from fastapi import FastAPI
