@@ -1,3 +1,4 @@
+# TODO add fields to container model like error (text), status (bool), updated_at (datetime) and crud method patch
 import json
 import subprocess
 
@@ -158,7 +159,7 @@ async def get_position(exchange_id: int, ticket: int) -> list[dict] | str:
 @router.post('/position/post', response_class=JSONResponse)
 async def post_position(request: Position) -> str:
     try:
-        statement = insert(position).values(request.dict())
+        statement = insert(position).values(request.model_dump())
         with engine.connect() as conn:
             conn.execute(statement)
             conn.commit()
@@ -302,7 +303,7 @@ async def get_container(exchange_id: int, is_cms: bool) -> list[dict] | str:
 @router.post('/option/post', response_class=JSONResponse)
 async def post_option(request: Options) -> JSONResponse:
     try:
-        statement = insert(option).values(request.dict())
+        statement = insert(option).values(request.model_dump())
         with engine.connect() as conn:
             conn.execute(statement)
             conn.commit()
@@ -414,7 +415,7 @@ async def get_position_history_list() -> list[dict] | str:
 @router.post('/position-history/post', response_class=JSONResponse)
 async def post_position_history(request: PositionHistory) -> str:
     try:
-        statement = insert(position_history).values(request.dict())
+        statement = insert(position_history).values(request.model_dump())
         with engine.connect() as conn:
             conn.execute(statement)
             conn.commit()
