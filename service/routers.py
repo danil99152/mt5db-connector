@@ -24,18 +24,18 @@ def dict_clean(items: dict):
     return result
 
 
-def run_cms_container(id, type):
+def run_cms_container(id_x, type_x):
     subprocess.Popen(f"docker run "
-                     f"-e EXCHANGE_ID={id} "
-                     f"--name mt_{type}{id} "
-                     f"{settings.investor_cms_image if type == 'investor' else settings.leader_cms_image}",
+                     f"-e EXCHANGE_ID={id_x} "
+                     f"--name mt_{type_x}{id_x} "
+                     f"{settings.investor_cms_image if type_x == 'investor' else settings.leader_cms_image}",
                      shell=True,
                      stdout=subprocess.PIPE)
 
     container_data = {
-        "exchange_pk": id,
-        "name": f"mt_{type}{id}",
-        "is_leader": True if type == 'leader' else False,
+        "exchange_pk": id_x,
+        "name": f"mt_{type_x}{id_x}",
+        "is_leader": True if type_x == 'leader' else False,
         "is_cms": True
     }
     insert_relate = insert(container).values(container_data)
@@ -165,7 +165,6 @@ async def post_position(request: Position) -> str:
             conn.commit()
         return "Posted"
     except Exception as e:
-        engine.connect().close()
         return Exceptions().post_exception(e)
 
 
@@ -264,7 +263,6 @@ async def post_exchange(request: dict) -> JSONResponse:
             conn.commit()
         return JSONResponse(content={'exchange': 'posted'})
     except Exception as e:
-        engine.connect().close()
         return Exceptions().post_exception(e)
 
 
@@ -321,7 +319,6 @@ async def post_option(request: Options) -> JSONResponse:
             run_signal_container(request.investor_pk, 'investor')
         return JSONResponse(content={'option': 'posted'})
     except Exception as e:
-        engine.connect().close()
         return Exceptions().post_exception(e)
 
 
@@ -421,7 +418,6 @@ async def post_position_history(request: PositionHistory) -> str:
             conn.commit()
         return "Posted"
     except Exception as e:
-        engine.connect().close()
         return Exceptions().post_exception(e)
 
 
